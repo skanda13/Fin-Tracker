@@ -11,7 +11,8 @@ import {
   LineChart, 
   Target, 
   FileBarChart2,
-  Calculator 
+  Calculator,
+  Wallet
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { ChartContainer, ChartTooltipContent, ChartTooltip } from "@/components/ui/chart";
@@ -175,20 +176,20 @@ const Index = () => {
               onClick={() => handleQuickActionClick("Goal setting")}
             />
           </Link>
+          <Link to="/budget-planner">
+            <QuickAction
+              title="Budget Planner"
+              description="Plan and track your monthly budget"
+              icon={<Wallet size={20} />}
+              onClick={() => handleQuickActionClick("Budget planning")}
+            />
+          </Link>
           <Link to="/reports">
             <QuickAction
               title="Generate Reports"
               description="Create financial reports and analysis"
               icon={<FileBarChart2 size={20} />}
               onClick={() => handleQuickActionClick("Report generation")}
-            />
-          </Link>
-          <Link to="/financial-calculator">
-            <QuickAction
-              title="Financial Calculator"
-              description="Calculate EMIs, interest rates, and more"
-              icon={<Calculator size={20} />}
-              onClick={() => handleQuickActionClick("Financial calculation")}
             />
           </Link>
         </div>

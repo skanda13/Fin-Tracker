@@ -9,8 +9,7 @@ import {
   FileBarChart2, 
   Calculator,
   Settings,
-  Package,
-  CreditCard
+  Wallet
 } from "lucide-react";
 
 const Sidebar = () => {
@@ -20,10 +19,9 @@ const Sidebar = () => {
     { name: "Expenses", icon: <ArrowUpCircle size={20} />, path: "/expenses" },
     { name: "Investments", icon: <LineChart size={20} />, path: "/investments" },
     { name: "Financial Goals", icon: <Target size={20} />, path: "/financial-goals" },
+    { name: "Budget Planner", icon: <Wallet size={20} />, path: "/budget-planner" },
     { name: "Reports", icon: <FileBarChart2 size={20} />, path: "/reports" },
     { name: "Financial Calculator", icon: <Calculator size={20} />, path: "/financial-calculator" },
-    { name: "Bank Reconciliation", icon: <CreditCard size={20} />, path: "/bank-reconciliation" },
-    { name: "Inventory", icon: <Package size={20} />, path: "/inventory" },
     { name: "Settings", icon: <Settings size={20} />, path: "/settings" },
   ];
 
