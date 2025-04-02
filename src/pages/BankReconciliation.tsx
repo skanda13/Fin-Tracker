@@ -1,4 +1,3 @@
-
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,7 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { Check, X, Refresh, Plus, Download } from "lucide-react";
+import { RefreshCw, X, Plus, Download, Check } from "lucide-react";
 
 const BankReconciliation = () => {
   const { toast } = useToast();
@@ -111,7 +110,7 @@ const BankReconciliation = () => {
         </div>
         <div className="flex mt-4 md:mt-0 space-x-2">
           <Button variant="outline" size="sm" className="flex items-center">
-            <Refresh size={16} className="mr-2" />
+            <RefreshCw size={16} className="mr-2" />
             Refresh
           </Button>
           <Button size="sm" className="flex items-center bg-ledger-600 hover:bg-ledger-700">
