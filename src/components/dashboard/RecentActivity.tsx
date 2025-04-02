@@ -6,7 +6,7 @@ interface Activity {
   title: string;
   description: string;
   timestamp: string;
-  type: "transaction" | "invoice" | "reconciliation" | "system";
+  type: "transaction" | "invoice" | "reconciliation" | "system" | "income" | "expense" | "investment";
 }
 
 interface RecentActivityProps {
@@ -24,6 +24,12 @@ const RecentActivity = ({ activities }: RecentActivityProps) => {
         return <div className="w-2 h-2 rounded-full bg-purple-500" />;
       case "system":
         return <div className="w-2 h-2 rounded-full bg-gray-500" />;
+      case "income":
+        return <div className="w-2 h-2 rounded-full bg-green-600" />;
+      case "expense":
+        return <div className="w-2 h-2 rounded-full bg-red-500" />;
+      case "investment":
+        return <div className="w-2 h-2 rounded-full bg-yellow-500" />;
     }
   };
 

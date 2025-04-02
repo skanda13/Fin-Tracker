@@ -9,6 +9,12 @@ import BankReconciliation from "./pages/BankReconciliation";
 import Inventory from "./pages/Inventory";
 import Reports from "./pages/Reports";
 import NotFound from "./pages/NotFound";
+import Income from "./pages/Income";
+import Expenses from "./pages/Expenses";
+import Investments from "./pages/Investments";
+import FinancialGoals from "./pages/FinancialGoals";
+import FinancialCalculator from "./pages/FinancialCalculator";
+import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
 
@@ -23,7 +29,12 @@ const App = () => (
           <Route path="/bank-reconciliation" element={<BankReconciliation />} />
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/reports" element={<Reports />} />
-          {/* Additional routes will be added as we develop more pages */}
+          <Route path="/income" element={<Income />} />
+          <Route path="/expenses" element={<Expenses />} />
+          <Route path="/investments" element={<Investments />} />
+          <Route path="/financial-goals" element={<FinancialGoals />} />
+          <Route path="/financial-calculator" element={<FinancialCalculator />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

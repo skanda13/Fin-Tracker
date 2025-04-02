@@ -3,8 +3,19 @@ import Layout from "@/components/Layout";
 import StatCard from "@/components/dashboard/StatCard";
 import QuickAction from "@/components/dashboard/QuickAction";
 import RecentActivity from "@/components/dashboard/RecentActivity";
-import { CreditCard, DollarSign, ArrowUpDown, Package, FileBarChart2, Clock, Users } from "lucide-react";
+import { Link } from "react-router-dom";
+import { 
+  DollarSign, 
+  ArrowUpCircle, 
+  ArrowDownCircle, 
+  LineChart, 
+  Target, 
+  FileBarChart2,
+  Calculator 
+} from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { ChartContainer, ChartTooltipContent, ChartTooltip } from "@/components/ui/chart";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Legend } from "recharts";
 
 const Index = () => {
   const { toast } = useToast();
@@ -19,40 +30,60 @@ const Index = () => {
   const recentActivities = [
     {
       id: "1",
-      title: "Bank transaction matched",
-      description: "Transaction #4392 matched automatically with bank statement",
-      timestamp: "2 minutes ago",
-      type: "reconciliation" as const,
+      title: "Salary received",
+      description: "Monthly salary credited to your account",
+      timestamp: "2 hours ago",
+      type: "income" as const,
     },
     {
       id: "2",
-      title: "New invoice created",
-      description: "Invoice #INV-2023-004 created for Client XYZ",
-      timestamp: "1 hour ago",
-      type: "invoice" as const,
+      title: "Rent paid",
+      description: "Monthly rent payment processed",
+      timestamp: "1 day ago",
+      type: "expense" as const,
     },
     {
       id: "3",
-      title: "Inventory updated",
-      description: "5 units of Product ABC added to inventory",
-      timestamp: "3 hours ago",
-      type: "transaction" as const,
+      title: "New investment added",
+      description: "Added investment in Mutual Funds",
+      timestamp: "3 days ago",
+      type: "investment" as const,
     },
     {
       id: "4",
-      title: "Automated report generated",
-      description: "Monthly financial report has been generated",
-      timestamp: "Yesterday at 10:30 AM",
-      type: "system" as const,
+      title: "Grocery shopping",
+      description: "Spent on weekly groceries",
+      timestamp: "4 days ago",
+      type: "expense" as const,
     },
     {
       id: "5",
-      title: "New team member added",
-      description: "Jane Smith has been added to the accounting team",
-      timestamp: "Yesterday at 2:15 PM",
+      title: "Financial goal updated",
+      description: "Updated savings target for Home Purchase",
+      timestamp: "1 week ago",
       type: "system" as const,
     },
   ];
+
+  const monthlyData = [
+    { name: "Jan", income: 45000, expenses: 32000 },
+    { name: "Feb", income: 47000, expenses: 30000 },
+    { name: "Mar", income: 48000, expenses: 35000 },
+    { name: "Apr", income: 46000, expenses: 32000 },
+    { name: "May", income: 50000, expenses: 34000 },
+    { name: "Jun", income: 52000, expenses: 36000 },
+  ];
+
+  const chartConfig = {
+    income: {
+      label: "Income",
+      color: "#4CAF50",
+    },
+    expenses: {
+      label: "Expenses",
+      color: "#F44336",
+    },
+  };
 
   return (
     <Layout>
@@ -63,36 +94,46 @@ const Index = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard
-          title="Cash Balance"
-          value="$24,742.00"
+          title="Total Balance"
+          value="₹1,24,500"
           icon={<DollarSign size={20} />}
           trend={{ value: "3.5%", positive: true }}
         />
         <StatCard
-          title="Pending Transactions"
-          value="12"
-          icon={<ArrowUpDown size={20} />}
+          title="Monthly Income"
+          value="₹52,000"
+          icon={<ArrowDownCircle size={20} />}
+          trend={{ value: "4%", positive: true }}
         />
         <StatCard
-          title="Accounts Reconciled"
-          value="8/10"
-          icon={<CreditCard size={20} />}
-          trend={{ value: "2 pending", positive: false }}
+          title="Monthly Expenses"
+          value="₹36,000"
+          icon={<ArrowUpCircle size={20} />}
+          trend={{ value: "5.5%", positive: false }}
         />
         <StatCard
-          title="Inventory Items"
-          value="243"
-          icon={<Package size={20} />}
-          trend={{ value: "5 low stock", positive: false }}
+          title="Investments"
+          value="₹4,00,000"
+          icon={<LineChart size={20} />}
+          trend={{ value: "12%", positive: true }}
         />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <div className="lg:col-span-2">
           <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-            <h2 className="text-lg font-semibold mb-4">Financial Overview</h2>
-            <div className="flex items-center justify-center h-64 bg-gray-50 rounded-md border border-gray-200">
-              <p className="text-gray-500">Chart visualization will appear here</p>
+            <h2 className="text-lg font-semibold mb-4">Income vs Expenses</h2>
+            <div className="h-64">
+              <ChartContainer config={chartConfig}>
+                <BarChart data={monthlyData}>
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Legend />
+                  <Bar dataKey="income" fill={chartConfig.income.color} name="Income" />
+                  <Bar dataKey="expenses" fill={chartConfig.expenses.color} name="Expenses" />
+                </BarChart>
+              </ChartContainer>
             </div>
           </div>
         </div>
@@ -102,36 +143,54 @@ const Index = () => {
       <div>
         <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <QuickAction
-            title="Reconcile Accounts"
-            description="Match your transactions with bank statements"
-            icon={<CreditCard size={20} />}
-            onClick={() => handleQuickActionClick("Bank reconciliation")}
-          />
-          <QuickAction
-            title="Generate Reports"
-            description="Create customized financial reports"
-            icon={<FileBarChart2 size={20} />}
-            onClick={() => handleQuickActionClick("Report generation")}
-          />
-          <QuickAction
-            title="Manage Inventory"
-            description="Update and track your inventory items"
-            icon={<Package size={20} />}
-            onClick={() => handleQuickActionClick("Inventory management")}
-          />
-          <QuickAction
-            title="Set Up Automation"
-            description="Automate recurring tasks and payments"
-            icon={<Clock size={20} />}
-            onClick={() => handleQuickActionClick("Automation setup")}
-          />
-          <QuickAction
-            title="Invite Team Members"
-            description="Collaborate with your accounting team"
-            icon={<Users size={20} />}
-            onClick={() => handleQuickActionClick("Team invitation")}
-          />
+          <Link to="/income">
+            <QuickAction
+              title="Add Income"
+              description="Record your income from various sources"
+              icon={<ArrowDownCircle size={20} />}
+              onClick={() => handleQuickActionClick("Income recording")}
+            />
+          </Link>
+          <Link to="/expenses">
+            <QuickAction
+              title="Add Expense"
+              description="Record your expenses by categories"
+              icon={<ArrowUpCircle size={20} />}
+              onClick={() => handleQuickActionClick("Expense recording")}
+            />
+          </Link>
+          <Link to="/investments">
+            <QuickAction
+              title="Manage Investments"
+              description="Track and update your investments"
+              icon={<LineChart size={20} />}
+              onClick={() => handleQuickActionClick("Investment management")}
+            />
+          </Link>
+          <Link to="/financial-goals">
+            <QuickAction
+              title="Set Financial Goals"
+              description="Create and track your financial goals"
+              icon={<Target size={20} />}
+              onClick={() => handleQuickActionClick("Goal setting")}
+            />
+          </Link>
+          <Link to="/reports">
+            <QuickAction
+              title="Generate Reports"
+              description="Create financial reports and analysis"
+              icon={<FileBarChart2 size={20} />}
+              onClick={() => handleQuickActionClick("Report generation")}
+            />
+          </Link>
+          <Link to="/financial-calculator">
+            <QuickAction
+              title="Financial Calculator"
+              description="Calculate EMIs, interest rates, and more"
+              icon={<Calculator size={20} />}
+              onClick={() => handleQuickActionClick("Financial calculation")}
+            />
+          </Link>
         </div>
       </div>
     </Layout>
