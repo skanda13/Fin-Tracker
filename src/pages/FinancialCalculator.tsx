@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -43,8 +42,8 @@ const FinancialCalculator = () => {
   return (
     <Layout>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Financial Calculator</h1>
-        <p className="text-gray-500 mt-1">Calculate EMIs, interest rates, and more</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Financial Calculator</h1>
+        <p className="text-gray-500 dark:text-gray-400 mt-1">Calculate EMIs, interest rates, and more</p>
       </div>
 
       <Tabs defaultValue="emi" className="w-full">
@@ -93,14 +92,14 @@ const FinancialCalculator = () => {
                   />
                 </div>
                 
-                <Button onClick={calculateEMI} className="bg-ledger-600 hover:bg-ledger-700">
+                <Button onClick={calculateEMI} className="bg-ledger-600 hover:bg-ledger-700 dark:bg-ledger-700 dark:hover:bg-ledger-600">
                   Calculate EMI
                 </Button>
                 
                 {emiResult !== null && (
-                  <div className="mt-4 p-4 bg-gray-50 rounded-md">
-                    <p className="font-medium text-gray-700">Your monthly EMI would be:</p>
-                    <p className="text-2xl font-bold text-ledger-700">₹{emiResult.toLocaleString()}</p>
+                  <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-md">
+                    <p className="font-medium text-gray-700 dark:text-gray-300">Your monthly EMI would be:</p>
+                    <p className="text-2xl font-bold text-ledger-700 dark:text-ledger-400">₹{emiResult.toLocaleString()}</p>
                   </div>
                 )}
               </div>
@@ -148,16 +147,16 @@ const FinancialCalculator = () => {
                   />
                 </div>
                 
-                <Button onClick={calculateSimpleInterest} className="bg-ledger-600 hover:bg-ledger-700">
+                <Button onClick={calculateSimpleInterest} className="bg-ledger-600 hover:bg-ledger-700 dark:bg-ledger-700 dark:hover:bg-ledger-600">
                   Calculate Interest
                 </Button>
                 
                 {simpleInterestResult !== null && (
-                  <div className="mt-4 p-4 bg-gray-50 rounded-md">
-                    <p className="font-medium text-gray-700">Simple Interest:</p>
-                    <p className="text-2xl font-bold text-ledger-700">₹{simpleInterestResult.toLocaleString()}</p>
-                    <p className="font-medium text-gray-700 mt-2">Total Amount:</p>
-                    <p className="text-xl font-bold text-ledger-700">
+                  <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-md">
+                    <p className="font-medium text-gray-700 dark:text-gray-300">Simple Interest:</p>
+                    <p className="text-2xl font-bold text-ledger-700 dark:text-ledger-400">₹{simpleInterestResult.toLocaleString()}</p>
+                    <p className="font-medium text-gray-700 dark:text-gray-300 mt-2">Total Amount:</p>
+                    <p className="text-xl font-bold text-ledger-700 dark:text-ledger-400">
                       ₹{(parseFloat(simpleAmount) + simpleInterestResult).toLocaleString()}
                     </p>
                   </div>

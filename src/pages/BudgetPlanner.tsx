@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,11 +28,12 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { Plus, Edit, Trash2, Wallet, Calendar, PieChart } from "lucide-react";
+import useApi from "@/hooks/useApi";
 
 type Category = "Housing" | "Food" | "Transportation" | "Entertainment" | "Utilities" | "Healthcare" | "Personal" | "Education" | "Savings" | "Other";
 
-interface BudgetItem {
-  id: string;
+interface Budget {
+  _id: string;
   category: Category;
   month: string;
   budgetAmount: number;
@@ -48,49 +48,9 @@ const BudgetPlanner = () => {
   const [budgetAmount, setBudgetAmount] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
   const [editingId, setEditingId] = useState<string | null>(null);
-
-  const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([
-    {
-      id: "1",
-      category: "Housing",
-      month: "June 2023",
-      budgetAmount: 25000,
-      actualAmount: 24500,
-      notes: "Monthly rent and maintenance",
-    },
-    {
-      id: "2",
-      category: "Food",
-      month: "June 2023",
-      budgetAmount: 10000,
-      actualAmount: 12500,
-      notes: "Groceries and dining out",
-    },
-    {
-      id: "3",
-      category: "Transportation",
-      month: "June 2023",
-      budgetAmount: 5000,
-      actualAmount: 4200,
-      notes: "Public transport and occasional cab",
-    },
-    {
-      id: "4",
-      category: "Entertainment",
-      month: "June 2023",
-      budgetAmount: 3000,
-      actualAmount: 3600,
-      notes: "Movies and weekend activities",
-    },
-    {
-      id: "5",
-      category: "Utilities",
-      month: "June 2023",
-      budgetAmount: 4000,
-      actualAmount: 3800,
-      notes: "Electricity, water, and internet",
-    },
-  ]);
+  const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const api = useApi();
 
   const months = [
     "January 2023",
@@ -120,7 +80,30 @@ const BudgetPlanner = () => {
     "Other",
   ];
 
-  const handleAddBudget = () => {
+  useEffect(() => {
+    fetchBudgets();
+  }, []);
+
+  const fetchBudgets = async () => {
+    setIsLoading(true);
+    try {
+      const data = await api.get('/api/budgets');
+      if (data) {
+        setBudgets(data);
+      }
+    } catch (error) {
+      console.error('Error fetching budgets:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load budgets. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAddBudget = async () => {
     if (!budgetAmount || parseFloat(budgetAmount) <= 0) {
       toast({
         title: "Invalid amount",
@@ -130,88 +113,123 @@ const BudgetPlanner = () => {
       return;
     }
 
-    if (editingId) {
-      setBudgetItems(
-        budgetItems.map((item) =>
-          item.id === editingId
-            ? {
-                ...item,
-                category,
-                month,
-                budgetAmount: parseFloat(budgetAmount),
-                notes,
-              }
-            : item
-        )
-      );
-      toast({
-        title: "Budget updated",
-        description: `Budget for ${category} has been updated.`,
-      });
-      setEditingId(null);
-    } else {
-      const newBudget: BudgetItem = {
-        id: Date.now().toString(),
-        category,
-        month,
-        budgetAmount: parseFloat(budgetAmount),
-        actualAmount: 0, // Default to 0 for new budgets
-        notes,
-      };
-      
-      setBudgetItems([...budgetItems, newBudget]);
-      toast({
-        title: "Budget added",
-        description: `Budget for ${category} has been added.`,
-      });
-    }
+    setIsLoading(true);
+    try {
+      if (editingId) {
+        const result = await api.put(`/api/budgets/${editingId}`, {
+          category,
+          month,
+          budgetAmount: parseFloat(budgetAmount),
+          notes,
+        });
 
-    // Reset form
-    setCategory("Housing");
-    setMonth("June 2023");
-    setBudgetAmount("");
-    setNotes("");
+        if (result) {
+          toast({
+            title: "Budget updated",
+            description: `Budget for ${category} has been updated.`,
+          });
+          setEditingId(null);
+          fetchBudgets();
+        }
+      } else {
+        const result = await api.post('/api/budgets', {
+          category,
+          month,
+          budgetAmount: parseFloat(budgetAmount),
+          notes,
+        });
+        
+        if (result) {
+          toast({
+            title: "Budget added",
+            description: `Budget for ${category} has been added.`,
+          });
+          fetchBudgets();
+        }
+      }
+
+      // Reset form
+      setCategory("Housing");
+      setMonth("June 2023");
+      setBudgetAmount("");
+      setNotes("");
+    } catch (error) {
+      console.error('Error saving budget:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save budget. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleEdit = (item: BudgetItem) => {
-    setEditingId(item.id);
+  const handleEdit = (item: Budget) => {
+    setEditingId(item._id);
     setCategory(item.category);
     setMonth(item.month);
     setBudgetAmount(item.budgetAmount.toString());
     setNotes(item.notes);
   };
 
-  const handleDelete = (id: string) => {
-    setBudgetItems(budgetItems.filter((item) => item.id !== id));
-    toast({
-      title: "Budget deleted",
-      description: "The budget item has been removed.",
-    });
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this budget?')) {
+      setIsLoading(true);
+      try {
+        const result = await api.delete(`/api/budgets/${id}`);
+        if (result) {
+          toast({
+            title: "Budget deleted",
+            description: "The budget item has been removed.",
+          });
+          fetchBudgets();
+        }
+      } catch (error) {
+        console.error('Error deleting budget:', error);
+        toast({
+          title: "Error",
+          description: "Failed to delete budget. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
   };
 
-  const handleUpdateActual = (id: string, actualAmount: number) => {
-    setBudgetItems(
-      budgetItems.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              actualAmount,
-            }
-          : item
-      )
-    );
-    toast({
-      title: "Actual spending updated",
-      description: "The actual spending amount has been updated.",
-    });
+  const handleUpdateActual = async (id: string, actualAmount: number) => {
+    setIsLoading(true);
+    try {
+      const result = await api.patch(`/api/budgets/${id}/actual`, {
+        actualAmount
+      });
+      
+      if (result) {
+        toast({
+          title: "Actual spending updated",
+          description: "The actual spending amount has been updated.",
+        });
+        fetchBudgets();
+      }
+    } catch (error) {
+      console.error('Error updating actual amount:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update actual amount. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const totalBudgeted = budgetItems.reduce(
+  const totalBudgeted = budgets.reduce(
     (sum, item) => sum + item.budgetAmount,
     0
   );
   
-  const totalSpent = budgetItems.reduce(
+  const totalSpent = budgets.reduce(
     (sum, item) => sum + item.actualAmount,
     0
   );
@@ -414,8 +432,8 @@ const BudgetPlanner = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {budgetItems.map((item) => (
-                      <TableRow key={item.id}>
+                    {budgets.map((item) => (
+                      <TableRow key={item._id}>
                         <TableCell className="font-medium">{item.category}</TableCell>
                         <TableCell>{item.month}</TableCell>
                         <TableCell className="text-right">₹{item.budgetAmount.toLocaleString()}</TableCell>
@@ -428,7 +446,7 @@ const BudgetPlanner = () => {
                               value={item.actualAmount}
                               onChange={(e) => {
                                 const value = parseFloat(e.target.value) || 0;
-                                handleUpdateActual(item.id, value);
+                                handleUpdateActual(item._id, value);
                               }}
                             />
                           </div>
@@ -460,7 +478,7 @@ const BudgetPlanner = () => {
                               size="icon"
                               variant="ghost"
                               className="h-8 w-8 text-red-600"
-                              onClick={() => handleDelete(item.id)}
+                              onClick={() => handleDelete(item._id)}
                             >
                               <Trash2 size={16} />
                             </Button>

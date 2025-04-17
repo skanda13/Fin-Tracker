@@ -1,4 +1,3 @@
-
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Activity {
@@ -34,9 +33,9 @@ const RecentActivity = ({ activities }: RecentActivityProps) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100">
-      <div className="p-4 border-b border-gray-200">
-        <h2 className="text-lg font-semibold">Recent Activity</h2>
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 className="text-lg font-semibold dark:text-gray-100">Recent Activity</h2>
       </div>
       <ScrollArea className="h-[300px]">
         <div className="p-4">
@@ -47,9 +46,9 @@ const RecentActivity = ({ activities }: RecentActivityProps) => {
                   {getActivityIcon(activity.type)}
                 </div>
                 <div>
-                  <h3 className="text-sm font-medium">{activity.title}</h3>
-                  <p className="text-xs text-gray-500 mt-1">{activity.description}</p>
-                  <p className="text-xs text-gray-400 mt-1">{activity.timestamp}</p>
+                  <h3 className="text-sm font-medium dark:text-gray-200">{activity.title}</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{activity.description}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{activity.timestamp}</p>
                 </div>
               </div>
             </div>

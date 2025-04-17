@@ -71,3 +71,54 @@ Yes it is!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+## Backend Setup
+
+This project now includes a backend server built with Express.js and MongoDB.
+
+### Prerequisites
+
+- Node.js (latest LTS version recommended)
+- MongoDB (local installation or MongoDB Atlas)
+
+### Setup
+
+1. Navigate to the server directory:
+   ```bash
+   cd server
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Create a `.env` file in the server directory with the following:
+   ```
+   PORT=5000
+   MONGODB_URI=mongodb://localhost:27017/ledger-wizard
+   NODE_ENV=development
+   ```
+
+4. Start the server in development mode:
+   ```bash
+   npm run dev
+   ```
+
+5. Seed the database with initial data:
+   ```bash
+   npm run seed
+   ```
+
+## Running the Full Application
+
+1. Start the MongoDB server (if running locally)
+2. Start the backend server:
+   ```bash
+   cd server
+   npm run dev
+   ```
+3. In a separate terminal, start the frontend:
+   ```bash
+   npm run dev
+   ```

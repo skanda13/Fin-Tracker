@@ -1,4 +1,3 @@
-
 import Layout from "@/components/Layout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -125,7 +124,7 @@ const Inventory = () => {
         </div>
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
           <h3 className="font-semibold text-lg mb-1">Total Value</h3>
-          <p className="text-3xl font-bold text-ledger-700">$23,789.27</p>
+          <p className="text-3xl font-bold text-ledger-700">₹23,789.27</p>
         </div>
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
           <h3 className="font-semibold text-lg mb-1">Low Stock Alert</h3>
@@ -189,8 +188,8 @@ const Inventory = () => {
                   <TableCell>{item.name}</TableCell>
                   <TableCell>{item.category}</TableCell>
                   <TableCell className="text-right">{item.quantity}</TableCell>
-                  <TableCell className="text-right">${item.unitPrice.toFixed(2)}</TableCell>
-                  <TableCell className="text-right">${item.totalValue.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">₹{item.unitPrice.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">₹{item.totalValue.toFixed(2)}</TableCell>
                   <TableCell>{getStatusBadge(item.status)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end space-x-2">

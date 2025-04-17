@@ -49,6 +49,14 @@
     --sidebar-border: 220 13% 91%;
 
     --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    /* Chart variables */
+    --chart-text-color: #6B7280;
+    --tooltip-bg: #ffffff;
+    --tooltip-border: #e5e7eb;
+    --tooltip-label: #111827;
+    --tooltip-item: #6B7280;
+    --tooltip-cursor: rgba(0, 0, 0, 0.1);
   }
 
   .dark {
@@ -87,6 +95,14 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    /* Chart variables */
+    --chart-text-color: #9CA3AF;
+    --tooltip-bg: #1F2937;
+    --tooltip-border: #374151;
+    --tooltip-label: #F9FAFB;
+    --tooltip-item: #E5E7EB;
+    --tooltip-cursor: rgba(255, 255, 255, 0.1);
   }
 }
 
