@@ -25,7 +25,6 @@ const useApi = <T>(options?: UseApiOptions) => {
     headers: Record<string, string> = {}
   ) => {
     try {
-      console.log(`API Request: ${method} ${url}`, body ? { body } : '');
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       // Get auth token from localStorage
@@ -44,14 +43,7 @@ const useApi = <T>(options?: UseApiOptions) => {
         requestOptions.body = JSON.stringify(body);
       }
 
-      console.log('Request options:', {
-        method,
-        headers: requestOptions.headers,
-        body: body ? 'PRESENT' : 'NONE'
-      });
-
       const response = await fetch(url, requestOptions);
-      console.log(`Response status: ${response.status}`);
       
       // If unauthorized (token expired or invalid), redirect to login
       if (response.status === 401) {
@@ -61,7 +53,6 @@ const useApi = <T>(options?: UseApiOptions) => {
       }
       
       const data = await response.json();
-      console.log('Response data:', data);
 
       if (!response.ok) {
         throw new Error(data.message || 'Something went wrong');
@@ -73,7 +64,6 @@ const useApi = <T>(options?: UseApiOptions) => {
       return data;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-      console.error('API Error:', errorMessage);
       setState((prev) => ({
         ...prev,
         error: errorMessage,
