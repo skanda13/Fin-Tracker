@@ -69,24 +69,24 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+      <Card className="w-full max-w-md bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Login</CardTitle>
-          <CardDescription className="text-center">
+          <CardTitle className="text-2xl font-bold text-center text-gray-900 dark:text-gray-100">Login</CardTitle>
+          <CardDescription className="text-center text-gray-500 dark:text-gray-400">
             Enter your credentials to access your account
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             {errorMessage && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">
+              <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-red-600 dark:text-red-400 text-sm">
                 {errorMessage}
               </div>
             )}
             
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-gray-700 dark:text-gray-300">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -95,14 +95,16 @@ const Login = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
                 required
+                className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700"
               />
             </div>
+            
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-gray-700 dark:text-gray-300">Password</Label>
                 <Link 
                   to="/forgot-password" 
-                  className="text-sm text-ledger-600 hover:text-ledger-800"
+                  className="text-sm text-ledger-600 hover:text-ledger-800 dark:text-ledger-400 dark:hover:text-ledger-300"
                 >
                   Forgot password?
                 </Link>
@@ -116,10 +118,11 @@ const Login = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isLoading}
                   required
+                  className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700"
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -127,10 +130,10 @@ const Login = () => {
               </div>
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col">
+          <CardFooter className="flex flex-col space-y-4">
             <Button 
               type="submit" 
-              className="w-full bg-ledger-600 hover:bg-ledger-700" 
+              className="w-full bg-ledger-600 hover:bg-ledger-700 dark:bg-ledger-500 dark:hover:bg-ledger-600 text-white" 
               disabled={isLoading}
             >
               {isLoading ? (
@@ -148,9 +151,9 @@ const Login = () => {
                 </span>
               )}
             </Button>
-            <p className="mt-4 text-center text-sm text-gray-600">
+            <p className="text-center text-sm text-gray-600 dark:text-gray-400">
               Don't have an account?{" "}
-              <Link to="/signup" className="text-ledger-600 hover:text-ledger-800 font-medium">
+              <Link to="/signup" className="text-ledger-600 hover:text-ledger-800 dark:text-ledger-400 dark:hover:text-ledger-300 font-medium">
                 Sign up
               </Link>
             </p>

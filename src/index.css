@@ -49,7 +49,7 @@
     --sidebar-border: 220 13% 91%;
 
     --sidebar-ring: 217.2 91.2% 59.8%;
-    
+
     /* Chart variables */
     --chart-text-color: #6B7280;
     --tooltip-bg: #ffffff;
@@ -95,7 +95,7 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
-    
+
     /* Chart variables */
     --chart-text-color: #9CA3AF;
     --tooltip-bg: #1F2937;
@@ -103,6 +103,16 @@
     --tooltip-label: #F9FAFB;
     --tooltip-item: #E5E7EB;
     --tooltip-cursor: rgba(255, 255, 255, 0.1);
+  }
+
+  /* Theme transition class for smooth theme switching */
+  .theme-transition,
+  .theme-transition *,
+  .theme-transition *::before,
+  .theme-transition *::after {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-duration: 300ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 

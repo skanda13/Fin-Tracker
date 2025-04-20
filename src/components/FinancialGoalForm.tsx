@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, Calendar as CalendarIcon } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -14,10 +14,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
@@ -55,8 +51,6 @@ const FinancialGoalForm = ({
   onCancel,
   isSubmitting,
 }: FinancialGoalFormProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-
   const form = useForm<GoalFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: initialData || {
@@ -70,6 +64,12 @@ const FinancialGoalForm = ({
 
   const handleSubmit = async (data: GoalFormData) => {
     await onSubmit(data);
+  };
+
+  // Helper function to format date to YYYY-MM-DD
+  const formatDateForInput = (date: Date | undefined): string => {
+    if (!date) return '';
+    return date.toISOString().split('T')[0];
   };
 
   return (
@@ -133,38 +133,44 @@ const FinancialGoalForm = ({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Deadline</FormLabel>
-              <Popover open={isOpen} onOpenChange={setIsOpen}>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value ? (
-                        format(field.value, "PPP")
-                      ) : (
-                        <span>Select a date</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={(date) => {
-                      field.onChange(date);
-                      setIsOpen(false);
+              <div className="relative">
+                <FormControl>
+                  <Input
+                    type="date"
+                    value={formatDateForInput(field.value)}
+                    onChange={(e) => {
+                      const newDate = e.target.value ? new Date(e.target.value) : undefined;
+                      field.onChange(newDate);
                     }}
-                    disabled={(date) => date < new Date()}
-                    initialFocus
+                    className="pl-3 pr-10 cursor-pointer hover:border-ledger-500 focus:border-ledger-500"
+                    onClick={(e) => {
+                      try {
+                        // Modern browsers
+                        (e.currentTarget as HTMLInputElement).showPicker();
+                      } catch (err) {
+                        // Fallback for browsers that don't support showPicker()
+                        // Just focus the input which will usually show the date picker
+                        (e.currentTarget as HTMLInputElement).focus();
+                      }
+                    }}
                   />
-                </PopoverContent>
-              </Popover>
+                </FormControl>
+                <div 
+                  className="absolute right-0 top-0 bottom-0 px-3 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                  onClick={() => {
+                    const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement;
+                    try {
+                      // Try to show the picker
+                      dateInput.showPicker();
+                    } catch (err) {
+                      // Fallback - just focus
+                      dateInput.focus();
+                    }
+                  }}
+                >
+                  <CalendarIcon size={18} className="text-gray-500" />
+                </div>
+              </div>
               <FormMessage />
             </FormItem>
           )}
@@ -192,7 +198,7 @@ const FinancialGoalForm = ({
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancel
           </Button>
-          <Button type="submit" disabled={isSubmitting} className="bg-ledger-600 hover:bg-ledger-700">
+          <Button type="submit" disabled={isSubmitting} className="bg-ledger-600 hover:bg-ledger-700 dark:bg-ledger-700 dark:hover:bg-ledger-600 dark:text-white">
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

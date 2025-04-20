@@ -1,4 +1,4 @@
-import { Bell, Search, Menu, LogOut, User, Settings as SettingsIcon, Moon, Sun } from "lucide-react";
+import { Menu, LogOut, Settings as SettingsIcon, Moon, Sun, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   DropdownMenu, 
@@ -7,18 +7,44 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 
-const Header = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+interface HeaderProps {
+  toggleSidebar: () => void;
+}
+
+const Header = ({ toggleSidebar }: HeaderProps) => {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Check sidebar state from layout
+  useEffect(() => {
+    const checkSidebarState = () => {
+      // Check if window width is mobile sized
+      const isMobile = window.innerWidth < 768;
+      setSidebarOpen(!isMobile);
+    };
+    
+    checkSidebarState();
+    window.addEventListener('resize', checkSidebarState);
+    
+    return () => {
+      window.removeEventListener('resize', checkSidebarState);
+    };
+  }, []);
+  
+  // Toggle local sidebar state for button appearance
+  const handleToggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+    toggleSidebar();
+  };
 
   const handleLogout = () => {
     logout();
@@ -41,23 +67,22 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 py-4 px-6 flex items-center justify-between">
+    <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 h-16 px-6 flex items-center justify-between">
       <div className="flex items-center">
         <Button 
           variant="ghost" 
           size="icon" 
-          className="mr-2 md:hidden"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="mr-4 hover:bg-gray-100 dark:hover:bg-gray-800"
+          onClick={handleToggleSidebar}
+          aria-label="Toggle sidebar"
         >
-          <Menu size={20} />
+          {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
         </Button>
-        <div className="relative hidden md:block">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-          <input
-            type="text"
-            placeholder="Search..."
-            className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-ledger-400 focus:border-transparent dark:bg-gray-800 dark:text-gray-200"
-          />
+        <div className="flex flex-col">
+          <h2 className="text-sm font-medium text-gray-800 dark:text-gray-200">
+            <span className="font-['Special_Gothic_Expanded_One'] text-lg tracking-wide">Welcome back, <span className="text-ledger-600 dark:text-ledger-400">{user?.name || "User"}</span></span>
+          </h2>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Here's an overview of all of your balances.</p>
         </div>
       </div>
       
@@ -73,26 +98,10 @@ const Header = () => {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell size={20} />
-              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"></span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="dark:bg-gray-800 dark:border-gray-700">
-            <DropdownMenuItem className="dark:text-gray-200 dark:focus:bg-gray-700">New notification</DropdownMenuItem>
-            <DropdownMenuItem className="dark:text-gray-200 dark:focus:bg-gray-700">View all notifications</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-        
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <div className="ml-4 flex items-center cursor-pointer">
+            <div className="flex items-center cursor-pointer">
               <div className="h-8 w-8 rounded-full bg-ledger-600 text-white flex items-center justify-center font-medium">
                 {getUserInitials()}
               </div>
-              <span className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-200 hidden md:block">
-                {user?.name || "User"}
-              </span>
             </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56 dark:bg-gray-800 dark:border-gray-700">
@@ -101,12 +110,6 @@ const Header = () => {
               <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user?.email}</p>
             </div>
             <DropdownMenuSeparator className="dark:border-gray-700" />
-            <DropdownMenuItem asChild>
-              <Link to="/profile" className="flex items-center cursor-pointer dark:text-gray-200 dark:focus:bg-gray-700">
-                <User className="w-4 h-4 mr-2" />
-                <span>Profile</span>
-              </Link>
-            </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link to="/settings" className="flex items-center cursor-pointer dark:text-gray-200 dark:focus:bg-gray-700">
                 <SettingsIcon className="w-4 h-4 mr-2" />

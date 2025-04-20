@@ -18,9 +18,8 @@ const QuickAction = ({ title, description, icon, onClick }: QuickActionProps) =>
         <h3 className="font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{description}</p>
         <Button 
-          variant="outline" 
           size="sm" 
-          className="mt-3 text-ledger-700 dark:text-ledger-400 border-ledger-200 dark:border-gray-600 hover:bg-ledger-50 dark:hover:bg-gray-700"
+          className="mt-3 bg-ledger-600 hover:bg-ledger-700 dark:bg-ledger-700 dark:hover:bg-ledger-600 dark:text-white"
           onClick={onClick}
         >
           Start

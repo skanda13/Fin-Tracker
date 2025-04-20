@@ -3,21 +3,19 @@ import Layout from "@/components/Layout";
 import StatCard from "@/components/dashboard/StatCard";
 import QuickAction from "@/components/dashboard/QuickAction";
 import RecentActivity from "@/components/dashboard/RecentActivity";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { 
   DollarSign, 
   ArrowUpCircle, 
   ArrowDownCircle, 
   LineChart, 
   Target, 
-  FileBarChart2,
   Calculator,
-  Wallet,
   IndianRupee
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Legend, Tooltip } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Legend, Tooltip, CartesianGrid } from "recharts";
 import useApi from "@/hooks/useApi";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -57,6 +55,7 @@ const Index = () => {
   const { toast } = useToast();
   const api = useApi();
   const { user } = useAuth();
+  const navigate = useNavigate();
   
   const [isLoading, setIsLoading] = useState(true);
   const [incomes, setIncomes] = useState<Income[]>([]);
@@ -105,6 +104,14 @@ const Index = () => {
     };
     
     fetchData();
+    
+    // Set up a refresh timer to fetch data every 10 seconds
+    const timer = setInterval(() => {
+      fetchData();
+      console.log('Dashboard data refreshed automatically');
+    }, 10000);
+    
+    return () => clearInterval(timer);
   }, []);
   
   // Generate recent activities from real data
@@ -112,7 +119,7 @@ const Index = () => {
     const activities: Activity[] = [];
     
     // Add income activities
-    incomes.slice(0, 3).forEach(income => {
+    incomes.forEach(income => {
       activities.push({
         id: income._id,
         title: `${income.source}`,
@@ -123,7 +130,7 @@ const Index = () => {
     });
     
     // Add expense activities
-    expenses.slice(0, 3).forEach(expense => {
+    expenses.forEach(expense => {
       activities.push({
         id: expense._id,
         title: `${expense.description}`,
@@ -133,12 +140,24 @@ const Index = () => {
       });
     });
     
+    // Try to add budget activities
+    budgets.slice(0, 3).forEach(budget => {
+      activities.push({
+        id: budget._id,
+        title: `Budget Update: ${budget.category}`,
+        description: `Budget - ₹${budget.budgetAmount.toLocaleString()} / Spent - ₹${budget.actualAmount.toLocaleString()}`,
+        timestamp: `${budget.month}`,
+        type: "system"
+      });
+    });
+    
     // Sort by date (newest first)
     activities.sort((a, b) => {
       return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
     });
     
-    setRecentActivities(activities);
+    // Limit to the 10 most recent activities
+    setRecentActivities(activities.slice(0, 10));
   };
   
   // Generate monthly data for chart
@@ -188,23 +207,7 @@ const Index = () => {
   
   const monthlyIncome = currentMonthIncomes.reduce((sum, income) => sum + income.amount, 0);
   const monthlyExpense = currentMonthExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-  
-  // Comparison with previous month for trend calculation
-  const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-  const previousMonthIncomes = incomes.filter(income => new Date(income.date).getMonth() === previousMonth);
-  const previousMonthExpenses = expenses.filter(expense => new Date(expense.date).getMonth() === previousMonth);
-  
-  const previousMonthIncome = previousMonthIncomes.reduce((sum, income) => sum + income.amount, 0);
-  const previousMonthExpense = previousMonthExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-  
-  // Calculate income trend percentage
-  const incomeTrend = previousMonthIncome === 0 ? 0 : 
-                     ((monthlyIncome - previousMonthIncome) / previousMonthIncome * 100).toFixed(1);
-  
-  // Calculate expense trend percentage
-  const expenseTrend = previousMonthExpense === 0 ? 0 : 
-                      ((monthlyExpense - previousMonthExpense) / previousMonthExpense * 100).toFixed(1);
-  
+
   const handleQuickActionClick = (action: string) => {
     toast({
       title: "Action initiated",
@@ -227,44 +230,32 @@ const Index = () => {
     <Layout>
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Dashboard</h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">Welcome back{user ? `, ${user.name}` : ''}! Here's an overview of your financial data.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <StatCard
           title="Total Balance"
           value={`₹${totalBalance.toLocaleString()}`}
           icon={<IndianRupee size={20} />}
-          trend={{ value: "0%", positive: totalBalance >= 0 }}
         />
         <StatCard
           title="Monthly Income"
           value={`₹${monthlyIncome.toLocaleString()}`}
           icon={<ArrowDownCircle size={20} />}
-          trend={{ value: `${incomeTrend}%`, positive: Number(incomeTrend) >= 0 }}
         />
         <StatCard
           title="Monthly Expenses"
           value={`₹${monthlyExpense.toLocaleString()}`}
           icon={<ArrowUpCircle size={20} />}
-          trend={{ value: `${expenseTrend}%`, positive: Number(expenseTrend) <= 0 }}
-        />
-        <StatCard
-          title="Budget Utilization"
-          value={`${budgets.length > 0 ? 
-                  Math.round((expenses.reduce((sum, expense) => sum + expense.amount, 0) / 
-                  budgets.reduce((sum, budget) => sum + budget.budgetAmount, 0)) * 100) : 0}%`}
-          icon={<Wallet size={20} />}
-          trend={{ value: "0%", positive: true }}
         />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
-        <div className="lg:col-span-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+        <div className="lg:col-span-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col">
           <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Income vs Expenses</h2>
-          <div className="h-[300px]">
+          <div className="h-[300px] flex-grow">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart
+              <AreaChart
                 width={500}
                 height={300}
                 data={monthlyData}
@@ -275,15 +266,52 @@ const Index = () => {
                   bottom: 5,
                 }}
               >
+                <defs>
+                  <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#4CAF50" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#4CAF50" stopOpacity={0.1}/>
+                  </linearGradient>
+                  <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#F44336" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#F44336" stopOpacity={0.1}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(107, 114, 128, 0.2)" />
                 <XAxis dataKey="name" tick={{ fill: 'var(--chart-text-color, #6B7280)' }} />
                 <YAxis tick={{ fill: 'var(--chart-text-color, #6B7280)' }} />
                 <Tooltip 
-                  formatter={(value) => [`₹${Number(value).toLocaleString()}`, '']}
-                  contentStyle={{ backgroundColor: 'var(--tooltip-bg, #ffffff)', border: '1px solid var(--tooltip-border, #e5e7eb)' }}
-                  labelStyle={{ color: 'var(--tooltip-label, #111827)' }}
-                  itemStyle={{ color: 'var(--tooltip-item, #6B7280)' }}
-                  wrapperStyle={{ outline: 'none' }}
-                  cursor={{ fill: 'var(--tooltip-cursor, rgba(0,0,0,0.1))' }}
+                  content={({ active, payload, label }) => {
+                    if (active && payload && payload.length) {
+                      return (
+                        <div className="bg-white dark:bg-gray-800 p-4 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
+                          <p className="font-bold text-gray-800 dark:text-gray-200 mb-2">{label}</p>
+                          {payload.map((entry, index) => {
+                            const isIncome = entry.dataKey === 'income';
+                            const color = isIncome ? chartConfig.income.color : chartConfig.expenses.color;
+                            const name = isIncome ? 'Income' : 'Expenses';
+                            
+                            return (
+                              <div key={index} className="mb-1 last:mb-0">
+                                <div className="flex items-center">
+                                  <div 
+                                    className="w-3 h-3 mr-2 rounded-full" 
+                                    style={{ backgroundColor: color }}
+                                  />
+                                  <span className="font-semibold" style={{ color }}>
+                                    {name}: 
+                                  </span>
+                                  <span className="ml-2 font-semibold" style={{ color }}>
+                                    ₹{Number(entry.value).toLocaleString()}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
                 />
                 <Legend
                   wrapperStyle={{ paddingTop: "20px" }}
@@ -291,13 +319,31 @@ const Index = () => {
                     <span className="text-sm text-gray-600 dark:text-gray-300">{value}</span>
                   )}
                 />
-                <Bar dataKey="income" fill={chartConfig.income.color} name={chartConfig.income.label} />
-                <Bar dataKey="expenses" fill={chartConfig.expenses.color} name={chartConfig.expenses.label} />
-              </BarChart>
+                <Area 
+                  type="monotone" 
+                  dataKey="income" 
+                  name={chartConfig.income.label}
+                  stroke={chartConfig.income.color} 
+                  fillOpacity={1}
+                  fill="url(#colorIncome)" 
+                  strokeWidth={2}
+                  activeDot={{ r: 6 }}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="expenses" 
+                  name={chartConfig.expenses.label}
+                  stroke={chartConfig.expenses.color} 
+                  fillOpacity={1}
+                  fill="url(#colorExpenses)" 
+                  strokeWidth={2}
+                  activeDot={{ r: 6 }}
+                />
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 flex flex-col h-full">
           <RecentActivity activities={recentActivities} />
         </div>
       </div>
@@ -307,25 +353,19 @@ const Index = () => {
           title="Manage Income"
           description="Add and track your income sources"
           icon={<ArrowDownCircle size={18} />}
-          onClick={() => handleQuickActionClick("Income management")}
+          onClick={() => navigate("/income")}
         />
         <QuickAction
           title="Track Expenses"
           description="Record and categorize your expenses"
           icon={<ArrowUpCircle size={18} />}
-          onClick={() => handleQuickActionClick("Expense tracking")}
+          onClick={() => navigate("/expenses")}
         />
         <QuickAction
           title="Set Financial Goals"
           description="Create and track your financial goals"
           icon={<Target size={18} />}
-          onClick={() => handleQuickActionClick("Goal setting")}
-        />
-        <QuickAction
-          title="Generate Reports"
-          description="View reports and insights about your finances"
-          icon={<FileBarChart2 size={18} />}
-          onClick={() => handleQuickActionClick("Report generation")}
+          onClick={() => navigate("/financial-goals")}
         />
       </div>
     </Layout>

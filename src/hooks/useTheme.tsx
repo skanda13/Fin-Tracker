@@ -26,11 +26,20 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       if (theme === 'system') {
         const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         root.classList.remove('light', 'dark');
+        // Add transition class before changing theme
+        root.classList.add('theme-transition');
         root.classList.add(systemTheme);
       } else {
         root.classList.remove('light', 'dark');
+        // Add transition class before changing theme
+        root.classList.add('theme-transition');
         root.classList.add(theme);
       }
+      
+      // Remove transition class after animation completes
+      setTimeout(() => {
+        root.classList.remove('theme-transition');
+      }, 300);
     };
 
     // Apply theme immediately

@@ -9,7 +9,6 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 
 // Pages
 import Index from "./pages/Index";
-import Reports from "./pages/Reports";
 import NotFound from "./pages/NotFound";
 import Income from "./pages/Income";
 import Expenses from "./pages/Expenses";
@@ -20,7 +19,6 @@ import Settings from "./pages/Settings";
 import BudgetPlanner from "./pages/BudgetPlanner";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
@@ -41,11 +39,6 @@ const App = () => (
               <Route path="/" element={
                 <ProtectedRoute>
                   <Index />
-                </ProtectedRoute>
-              } />
-              <Route path="/reports" element={
-                <ProtectedRoute>
-                  <Reports />
                 </ProtectedRoute>
               } />
               <Route path="/income" element={
@@ -81,11 +74,6 @@ const App = () => (
               <Route path="/settings" element={
                 <ProtectedRoute>
                   <Settings />
-                </ProtectedRoute>
-              } />
-              <Route path="/profile" element={
-                <ProtectedRoute>
-                  <Profile />
                 </ProtectedRoute>
               } />
               

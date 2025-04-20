@@ -1,12 +1,13 @@
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { Plus, Edit, Trash, Loader2 } from "lucide-react";
+import { Plus, Edit, Trash, Loader2, Save } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Progress } from "@/components/ui/progress";
 import { useEffect, useState } from "react";
 import useFinancialGoals from "@/hooks/useFinancialGoals";
 import FinancialGoalForm, { GoalFormData, ApiGoalData } from "@/components/FinancialGoalForm";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 const FinancialGoals = () => {
   const { toast } = useToast();
@@ -16,6 +17,8 @@ const FinancialGoals = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentGoal, setCurrentGoal] = useState<(GoalFormData & { _id?: string }) | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [updatingAmount, setUpdatingAmount] = useState<{id: string, amount: string} | null>(null);
+  const [isSavingAmount, setIsSavingAmount] = useState<string | null>(null);
 
   useEffect(() => {
     fetchGoals();
@@ -116,6 +119,88 @@ const FinancialGoals = () => {
     }).format(amount);
   };
 
+  // Calculate days left until deadline
+  const calculateDaysLeft = (deadline: string) => {
+    const deadlineDate = new Date(deadline);
+    const today = new Date();
+    
+    // Reset time portion for accurate day calculation
+    deadlineDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    
+    const timeDiff = deadlineDate.getTime() - today.getTime();
+    const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    
+    return daysLeft;
+  };
+
+  // Handle quick update of current amount
+  const handleQuickUpdateStart = (goalId: string, currentAmount: number) => {
+    setUpdatingAmount({
+      id: goalId,
+      amount: currentAmount.toString()
+    });
+  };
+
+  const handleAmountChange = (value: string) => {
+    if (updatingAmount) {
+      setUpdatingAmount({
+        ...updatingAmount,
+        amount: value
+      });
+    }
+  };
+
+  const handleQuickUpdateSave = async (goalId: string) => {
+    if (!updatingAmount) return;
+    
+    setIsSavingAmount(goalId);
+    
+    try {
+      const amount = parseFloat(updatingAmount.amount);
+      if (isNaN(amount) || amount < 0) {
+        toast({
+          title: "Invalid amount",
+          description: "Please enter a valid amount",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      const goal = goals.find(g => g._id === goalId);
+      if (!goal) return;
+      
+      const updatedData: Partial<ApiGoalData> = {
+        name: goal.name,
+        targetAmount: goal.targetAmount,
+        currentAmount: amount,
+        deadline: goal.deadline,
+        notes: goal.notes
+      };
+      
+      await updateGoal(goalId, updatedData);
+      
+      toast({
+        title: "Amount updated",
+        description: "Goal progress has been updated successfully.",
+      });
+      
+      setUpdatingAmount(null);
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to update amount. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingAmount(null);
+    }
+  };
+
+  const handleCancelUpdate = () => {
+    setUpdatingAmount(null);
+  };
+
   return (
     <Layout>
       <div className="mb-6 flex justify-between items-center">
@@ -123,7 +208,7 @@ const FinancialGoals = () => {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Financial Goals</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">Set and track your financial goals</p>
         </div>
-        <Button onClick={handleAddGoal} className="bg-ledger-600 hover:bg-ledger-700 dark:bg-ledger-700 dark:hover:bg-ledger-600">
+        <Button onClick={handleAddGoal} className="bg-ledger-600 hover:bg-ledger-700 dark:bg-ledger-700 dark:hover:bg-ledger-600 dark:text-white">
           <Plus size={16} className="mr-2" />
           Add Goal
         </Button>
@@ -137,7 +222,7 @@ const FinancialGoals = () => {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-8 text-center">
           <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">No financial goals yet</h3>
           <p className="mt-2 text-gray-500 dark:text-gray-400">Create your first financial goal to start tracking your progress.</p>
-          <Button onClick={handleAddGoal} className="mt-4 bg-ledger-600 hover:bg-ledger-700 dark:bg-ledger-700 dark:hover:bg-ledger-600">
+          <Button onClick={handleAddGoal} className="mt-4 bg-ledger-600 hover:bg-ledger-700 dark:bg-ledger-700 dark:hover:bg-ledger-600 dark:text-white">
             <Plus size={16} className="mr-2" />
             Add Goal
           </Button>
@@ -148,6 +233,8 @@ const FinancialGoals = () => {
             const progress = calculateProgress(goal.currentAmount, goal.targetAmount);
             const remaining = goal.targetAmount - goal.currentAmount;
             const deadlineDate = new Date(goal.deadline).toLocaleDateString();
+            const daysLeft = calculateDaysLeft(goal.deadline);
+            const isUpdating = updatingAmount?.id === goal._id;
             
             return (
               <div key={goal._id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6">
@@ -155,7 +242,10 @@ const FinancialGoals = () => {
                   <div>
                     <h3 className="text-lg font-semibold dark:text-gray-100">{goal.name}</h3>
                     <p className="text-gray-500 dark:text-gray-400 text-sm">
-                      Target: {formatCurrency(goal.targetAmount)} • Deadline: {deadlineDate}
+                      Target: {formatCurrency(goal.targetAmount)} • Deadline: {deadlineDate} 
+                      <span className={`ml-2 ${daysLeft < 30 ? 'text-red-500 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+                        ({daysLeft} days left)
+                      </span>
                     </p>
                   </div>
                   <div className="flex space-x-2">
@@ -163,7 +253,7 @@ const FinancialGoals = () => {
                       variant="outline" 
                       size="sm" 
                       onClick={() => handleEditGoal(goal)}
-                      className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                      className="dark:border-gray-600 dark:text-gray-300 dark:bg-gray-700 border-gray-500"
                     >
                       <Edit size={14} className="mr-1" />
                       Edit
@@ -173,7 +263,7 @@ const FinancialGoals = () => {
                       size="sm" 
                       disabled={isDeleting === goal._id}
                       onClick={() => handleDeleteGoal(goal._id)}
-                      className="text-red-600 dark:text-red-400 border-red-200 dark:border-red-800/30 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      className="text-red-600 dark:text-red-400 border-red-500 dark:border-red-800/30 hover:bg-red-50 dark:bg-red-900/20"
                     >
                       {isDeleting === goal._id ? (
                         <Loader2 size={14} className="animate-spin" />
@@ -195,8 +285,50 @@ const FinancialGoals = () => {
                   <Progress value={progress} className="h-2" />
                 </div>
                 
-                <div className="flex justify-between text-sm mt-4">
-                  <span className="text-gray-500 dark:text-gray-400">Current: {formatCurrency(goal.currentAmount)}</span>
+                <div className="flex justify-between items-center text-sm mt-4">
+                  <div className="flex items-center">
+                    <span className="text-gray-500 dark:text-gray-400 mr-2">Current:</span>
+                    {isUpdating ? (
+                      <div className="flex items-center">
+                        <Input
+                          type="number"
+                          value={updatingAmount.amount}
+                          onChange={(e) => handleAmountChange(e.target.value)}
+                          className="w-24 h-8 text-sm py-1 px-2"
+                          autoFocus
+                        />
+                        <div className="flex space-x-1 ml-2">
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            className="h-8 w-8 p-0 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
+                            onClick={() => handleQuickUpdateSave(goal._id)}
+                            disabled={isSavingAmount === goal._id}
+                          >
+                            {isSavingAmount === goal._id ? 
+                              <Loader2 size={14} className="animate-spin" /> : 
+                              <Save size={14} />
+                            }
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            className="h-8 w-8 p-0 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                            onClick={handleCancelUpdate}
+                          >
+                            <Trash size={14} />
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <span 
+                        className="text-gray-700 dark:text-gray-300 cursor-pointer hover:text-ledger-600 dark:hover:text-ledger-400 underline underline-offset-4"
+                        onClick={() => handleQuickUpdateStart(goal._id, goal.currentAmount)}
+                      >
+                        {formatCurrency(goal.currentAmount)}
+                      </span>
+                    )}
+                  </div>
                   <span className="text-gray-500 dark:text-gray-400">Remaining: {formatCurrency(remaining)}</span>
                 </div>
                 

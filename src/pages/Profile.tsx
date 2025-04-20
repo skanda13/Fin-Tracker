@@ -91,13 +91,13 @@ const Profile = () => {
   return (
     <Layout>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>
-        <p className="text-gray-500 mt-1">View and manage your account information</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">My Profile</h1>
+        <p className="text-gray-500 dark:text-gray-400 mt-1">View and manage your account information</p>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="md:col-span-2">
-          <Card>
+          <Card className="dark:bg-gray-800 dark:border-gray-700">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>Account Information</CardTitle>
@@ -141,6 +141,7 @@ const Profile = () => {
                     value={name} 
                     onChange={(e) => setName(e.target.value)}
                     disabled={!isEditing}
+                    className="bg-gray-50 dark:bg-gray-600"
                   />
                 </div>
                 <div className="space-y-2">
@@ -149,7 +150,7 @@ const Profile = () => {
                     id="email" 
                     value={email} 
                     disabled={true}
-                    className="bg-gray-50"
+                    className="bg-gray-50 dark:bg-gray-600"
                   />
                   <p className="text-xs text-gray-500">Email cannot be changed</p>
                 </div>
@@ -160,6 +161,7 @@ const Profile = () => {
                     value={currency} 
                     onChange={(e) => setCurrency(e.target.value)}
                     disabled={!isEditing}
+                    className="bg-gray-50 dark:bg-gray-600"
                   />
                 </div>
                 <div className="space-y-2">
@@ -176,7 +178,7 @@ const Profile = () => {
           </Card>
           
           <div className="mt-8">
-            <Card>
+            <Card className="dark:bg-gray-800 dark:border-gray-700">
               <CardHeader>
                 <CardTitle>Security</CardTitle>
                 <CardDescription>Manage your account security</CardDescription>
@@ -201,7 +203,7 @@ const Profile = () => {
         </div>
         
         <div>
-          <Card>
+          <Card className="dark:bg-gray-800 dark:border-gray-700">
             <CardHeader>
               <CardTitle>Account Summary</CardTitle>
             </CardHeader>

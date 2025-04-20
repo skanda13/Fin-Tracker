@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Plus, Edit, Trash } from "lucide-react";
+import { Plus, Edit, Trash, Calendar } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import useApi from "@/hooks/useApi";
 
@@ -104,7 +104,14 @@ const Investments = () => {
   const resetForm = () => {
     setName('');
     setAmount('');
-    setDate(new Date().toISOString().split('T')[0]);
+    
+    // Format today's date in YYYY-MM-DD format for the date input
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    setDate(`${year}-${month}-${day}`);
+    
     setType('Equity');
     setReturns('');
     setNotes('');
@@ -176,7 +183,7 @@ const Investments = () => {
         </div>
         <Button 
           onClick={handleAddInvestment} 
-          className="bg-ledger-600 hover:bg-ledger-700 dark:bg-ledger-700 dark:hover:bg-ledger-600"
+          className="bg-ledger-600 hover:bg-ledger-700 dark:bg-ledger-700 dark:hover:bg-ledger-600 dark:text-white"
           disabled={isLoading}
         >
           <Plus size={16} className="mr-2" />
@@ -281,13 +288,43 @@ const Investments = () => {
               <Label htmlFor="date" className="text-right">
                 Date
               </Label>
-              <Input
-                id="date"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="col-span-3"
-              />
+              <div className="relative col-span-3">
+                <Input
+                  id="date"
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="col-span-3 pl-3 pr-10 cursor-pointer hover:border-ledger-500 focus:border-ledger-500"
+                  onClick={(e) => {
+                    try {
+                      // Modern browsers
+                      (e.currentTarget as HTMLInputElement).showPicker();
+                    } catch (err) {
+                      // Fallback for browsers that don't support showPicker()
+                      // Just focus the input which will usually show the date picker
+                      (e.currentTarget as HTMLInputElement).focus();
+                    }
+                  }}
+                />
+                <div 
+                  className="absolute right-0 top-0 bottom-0 px-3 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                  onClick={() => {
+                    const dateInput = document.getElementById('date') as HTMLInputElement;
+                    try {
+                      // Try to show the picker
+                      dateInput.showPicker();
+                    } catch (err) {
+                      // Fallback - just focus
+                      dateInput.focus();
+                    }
+                  }}
+                >
+                  <Calendar 
+                    size={18} 
+                    className="text-gray-500" 
+                  />
+                </div>
+              </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="type" className="text-right">
@@ -343,7 +380,7 @@ const Investments = () => {
             </Button>
             <Button 
               onClick={handleSubmit} 
-              className="bg-ledger-600 hover:bg-ledger-700 dark:bg-ledger-700 dark:hover:bg-ledger-600"
+              className="bg-ledger-600 hover:bg-ledger-700 dark:bg-ledger-700 dark:hover:bg-ledger-600 dark:text-white"
               disabled={isLoading}
             >
               {isLoading ? (
