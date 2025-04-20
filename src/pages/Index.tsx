@@ -104,14 +104,6 @@ const Index = () => {
     };
     
     fetchData();
-    
-    // Set up a refresh timer to fetch data every 10 seconds
-    const timer = setInterval(() => {
-      fetchData();
-      console.log('Dashboard data refreshed automatically');
-    }, 10000);
-    
-    return () => clearInterval(timer);
   }, []);
   
   // Generate recent activities from real data

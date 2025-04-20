@@ -59,7 +59,7 @@ app.use('/api/investments', protect, investmentRoutes);
 
 // Basic home route
 app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to Ledger Wizard API' });
+  res.json({ message: 'Welcome to Finance Tracker API' });
 });
 
 // Error handling middleware
