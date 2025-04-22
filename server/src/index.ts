@@ -6,6 +6,7 @@ import connectDB from './config/db';
 import path from 'path';
 import { protect } from './middleware/authMiddleware';
 import { loginUser, registerUser, getMe, updateProfile } from './controllers/authController';
+import fs from 'fs';
 
 // Load environment variables
 dotenv.config();
@@ -218,13 +219,30 @@ app.delete('/api/investments/:id', protect, (req: any, res: Response) => {
   res.json({ message: 'Delete investment' });
 });
 
-// Serve static files from the React app
-app.use(express.static(path.join(__dirname, '../../client/build')));
-
-// Handle client-side routing
-app.get('*', (req: Request, res: Response) => {
-  res.sendFile(path.join(__dirname, '../../client/build/index.html'));
-});
+// Serve static files from the React app if the build directory exists
+const clientBuildPath = path.join(__dirname, '../../client/build');
+if (fs.existsSync(clientBuildPath)) {
+  app.use(express.static(clientBuildPath));
+  
+  // Handle client-side routing
+  app.get('*', (req: Request, res: Response) => {
+    res.sendFile(path.join(clientBuildPath, 'index.html'));
+  });
+} else {
+  console.log('Client build directory not found. API-only mode enabled.');
+  
+  // API-only mode handler
+  app.get('*', (req: Request, res: Response) => {
+    if (req.path.startsWith('/api')) {
+      res.status(404).json({ message: 'API endpoint not found' });
+    } else {
+      res.status(200).json({ 
+        message: 'Welcome to Finance Tracker API',
+        note: 'Client build directory not found. Running in API-only mode.'
+      });
+    }
+  });
+}
 
 // Error handling middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
