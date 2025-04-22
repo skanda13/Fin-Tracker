@@ -32,6 +32,14 @@ app.use(cors({
 // Handle preflight requests
 app.options('*', cors());
 
+// Debug middleware
+app.use((req: Request, res: Response, next: NextFunction) => {
+  console.log(`Incoming ${req.method} request to ${req.url}`);
+  console.log('Headers:', req.headers);
+  console.log('Body:', req.body);
+  next();
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
@@ -64,6 +72,14 @@ app.post('/api/auth/register', async (req: Request, res: Response) => {
   }
 });
 
+// Handle GET requests to POST endpoints
+app.get('/api/auth/register', (req: Request, res: Response) => {
+  res.status(405).json({ 
+    message: 'Method Not Allowed',
+    error: 'This endpoint only accepts POST requests'
+  });
+});
+
 app.post('/api/auth/login', async (req: Request, res: Response) => {
   try {
     console.log('Login request body:', req.body);
@@ -72,6 +88,14 @@ app.post('/api/auth/login', async (req: Request, res: Response) => {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Login failed', error: error.message });
   }
+});
+
+// Handle GET requests to POST endpoints
+app.get('/api/auth/login', (req: Request, res: Response) => {
+  res.status(405).json({ 
+    message: 'Method Not Allowed',
+    error: 'This endpoint only accepts POST requests'
+  });
 });
 
 app.get('/api/auth/me', protect, getMe);
@@ -192,6 +216,14 @@ app.put('/api/investments/:id', protect, (req: any, res: Response) => {
 
 app.delete('/api/investments/:id', protect, (req: any, res: Response) => {
   res.json({ message: 'Delete investment' });
+});
+
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, '../../client/build')));
+
+// Handle client-side routing
+app.get('*', (req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, '../../client/build/index.html'));
 });
 
 // Error handling middleware
