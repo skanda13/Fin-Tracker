@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
 import connectDB from './config/db';
+import path from 'path';
 
 // Import routes
 import authRoutes from './routes/authRoutes';
@@ -21,13 +22,19 @@ dotenv.config();
 connectDB();
 
 const app = express();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(express.json());
-if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'));
-}
+app.use(morgan('dev')); // Keep morgan in production for logging
+
+// Enable CORS
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://personal-finance-tracker-r1ri.onrender.com']
+    : ['http://localhost:8080', 'http://localhost:5173', 'http://localhost:8081'],
+  credentials: true
+}));
 
 // Log all incoming requests
 app.use((req, res, next) => {
@@ -35,24 +42,16 @@ app.use((req, res, next) => {
   next();
 });
 
-// Enable CORS
-app.use(cors({
-  origin: ['http://localhost:8080', 'http://localhost:5173', 'http://localhost:8081', 'https://personal-finance-tracker-r1ri.onrender.com', '*'],
-  credentials: true
-}));
-
 // Routes
 app.use('/api/auth', authRoutes);
 
 // Basic home route
 app.get('/', (req, res) => {
-  console.log('Root endpoint accessed');
   res.json({ message: 'Welcome to Finance Tracker API' });
 });
 
 // Add a test route to verify authRoutes are loaded
 app.get('/api/test', (req, res) => {
-  console.log('Test endpoint accessed');
   res.json({ message: 'API test endpoint working' });
 });
 
@@ -75,12 +74,17 @@ app.use('/api/budgets', protect, budgetRoutes);
 app.use('/api/goals', protect, goalRoutes);
 app.use('/api/investments', protect, investmentRoutes);
 
-// Error handling middleware - should be AFTER all other routes
+// Error handling middleware
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Something broke!' });
+});
+
+// 404 handler
 app.use((req, res) => {
-  console.log(`404 Not Found: ${req.method} ${req.url}`);
   res.status(404).json({ message: 'Route not found' });
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
 }); 
