@@ -1,58 +1,49 @@
-import mongoose from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
-export interface IExpense {
-  description: string;
+export interface IExpense extends Document {
+  name: string;
   amount: number;
   date: Date;
-  category: string;
-  paymentMethod?: string;
+  category?: string;
   notes?: string;
-  userId: mongoose.Schema.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-const expenseSchema = new mongoose.Schema<IExpense>(
+const expenseSchema = new Schema<IExpense>(
   {
-    description: {
+    name: {
       type: String,
-      required: [true, 'Description is required'],
-      trim: true,
+      required: [true, 'Please provide a name for the expense'],
+      trim: true
     },
     amount: {
       type: Number,
-      required: [true, 'Amount is required'],
-      min: [0, 'Amount cannot be negative'],
+      required: [true, 'Please provide an amount'],
+      min: [0, 'Amount cannot be negative']
     },
     date: {
       type: Date,
-      required: [true, 'Date is required'],
-      default: Date.now,
+      required: [true, 'Please provide a date']
     },
     category: {
       type: String,
-      required: [true, 'Category is required'],
-      enum: ['Housing', 'Food', 'Transportation', 'Entertainment', 'Utilities', 'Healthcare', 'Personal', 'Education', 'Savings', 'Other'],
-      default: 'Other',
-    },
-    paymentMethod: {
-      type: String,
-      enum: ['Cash', 'Credit Card', 'Debit Card', 'UPI', 'Bank Transfer', 'Other'],
-      default: 'Other',
+      trim: true
     },
     notes: {
       type: String,
-      trim: true,
+      trim: true
     },
     userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      type: Schema.Types.ObjectId,
       required: true,
-    },
+      ref: 'User'
+    }
   },
   {
-    timestamps: true,
+    timestamps: true
   }
 );
 
-const Expense = mongoose.model<IExpense>('Expense', expenseSchema);
-
-export default Expense; 
+export default mongoose.model<IExpense>('Expense', expenseSchema); 

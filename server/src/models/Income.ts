@@ -1,52 +1,49 @@
-import mongoose from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
-export interface IIncome {
-  source: string;
+export interface IIncome extends Document {
+  name: string;
   amount: number;
   date: Date;
-  category: string;
+  category?: string;
   notes?: string;
-  userId: mongoose.Schema.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-const incomeSchema = new mongoose.Schema<IIncome>(
+const incomeSchema = new Schema<IIncome>(
   {
-    source: {
+    name: {
       type: String,
-      required: [true, 'Income source is required'],
-      trim: true,
+      required: [true, 'Please provide a name for the income'],
+      trim: true
     },
     amount: {
       type: Number,
-      required: [true, 'Amount is required'],
-      min: [0, 'Amount cannot be negative'],
+      required: [true, 'Please provide an amount'],
+      min: [0, 'Amount cannot be negative']
     },
     date: {
       type: Date,
-      required: [true, 'Date is required'],
-      default: Date.now,
+      required: [true, 'Please provide a date']
     },
     category: {
       type: String,
-      required: [true, 'Category is required'],
-      enum: ['Employment', 'Self-employment', 'Investments', 'Rental', 'Other'],
-      default: 'Other',
+      trim: true
     },
     notes: {
       type: String,
-      trim: true,
+      trim: true
     },
     userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      type: Schema.Types.ObjectId,
       required: true,
-    },
+      ref: 'User'
+    }
   },
   {
-    timestamps: true,
+    timestamps: true
   }
 );
 
-const Income = mongoose.model<IIncome>('Income', incomeSchema);
-
-export default Income; 
+export default mongoose.model<IIncome>('Income', incomeSchema); 
