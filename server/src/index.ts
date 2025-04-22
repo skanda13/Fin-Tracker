@@ -26,7 +26,7 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(express.json());
-app.use(morgan('dev')); // Keep morgan in production for logging
+app.use(morgan('dev'));
 
 // Enable CORS
 app.use(cors({
@@ -42,20 +42,22 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes
-app.use('/api/auth', authRoutes);
-
 // Basic home route
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to Finance Tracker API' });
 });
 
-// Add a test route to verify authRoutes are loaded
+// Test route
 app.get('/api/test', (req, res) => {
   res.json({ message: 'API test endpoint working' });
 });
 
-// Protected route to get current user
+// Auth routes
+console.log('Setting up auth routes...');
+app.use('/api/auth', authRoutes);
+console.log('Auth routes setup complete');
+
+// Protected routes
 app.get('/api/users/me', protect, (req: any, res: Response) => {
   res.json({
     _id: req.user._id,
@@ -65,7 +67,6 @@ app.get('/api/users/me', protect, (req: any, res: Response) => {
   });
 });
 
-// Protected route to update user profile
 app.put('/api/users/profile', protect, updateProfile);
 
 app.use('/api/incomes', protect, incomeRoutes);
@@ -82,6 +83,7 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 
 // 404 handler
 app.use((req, res) => {
+  console.log(`404 Not Found: ${req.method} ${req.url}`);
   res.status(404).json({ message: 'Route not found' });
 });
 
