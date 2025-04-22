@@ -17,14 +17,20 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(morgan('dev'));
 
-// Enable CORS
+// Enable CORS with specific options
 app.use(cors({
   origin: process.env.CORS_ORIGIN || 'https://personal-finance-tracker-r1ri.onrender.com',
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Handle preflight requests
+app.options('*', cors());
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -53,15 +59,20 @@ app.put('/api/users/profile', protect, updateProfile);
 app.get('/api/incomes', protect, (req: any, res: Response) => {
   res.json({ message: 'Get all incomes' });
 });
+
 app.post('/api/incomes', protect, (req: any, res: Response) => {
-  res.json({ message: 'Create income' });
+  console.log('Create income request body:', req.body);
+  res.json({ message: 'Create income', data: req.body });
 });
+
 app.get('/api/incomes/:id', protect, (req: any, res: Response) => {
   res.json({ message: 'Get income by id' });
 });
+
 app.put('/api/incomes/:id', protect, (req: any, res: Response) => {
   res.json({ message: 'Update income' });
 });
+
 app.delete('/api/incomes/:id', protect, (req: any, res: Response) => {
   res.json({ message: 'Delete income' });
 });
@@ -70,15 +81,20 @@ app.delete('/api/incomes/:id', protect, (req: any, res: Response) => {
 app.get('/api/expenses', protect, (req: any, res: Response) => {
   res.json({ message: 'Get all expenses' });
 });
+
 app.post('/api/expenses', protect, (req: any, res: Response) => {
-  res.json({ message: 'Create expense' });
+  console.log('Create expense request body:', req.body);
+  res.json({ message: 'Create expense', data: req.body });
 });
+
 app.get('/api/expenses/:id', protect, (req: any, res: Response) => {
   res.json({ message: 'Get expense by id' });
 });
+
 app.put('/api/expenses/:id', protect, (req: any, res: Response) => {
   res.json({ message: 'Update expense' });
 });
+
 app.delete('/api/expenses/:id', protect, (req: any, res: Response) => {
   res.json({ message: 'Delete expense' });
 });
@@ -87,15 +103,20 @@ app.delete('/api/expenses/:id', protect, (req: any, res: Response) => {
 app.get('/api/budgets', protect, (req: any, res: Response) => {
   res.json({ message: 'Get all budgets' });
 });
+
 app.post('/api/budgets', protect, (req: any, res: Response) => {
-  res.json({ message: 'Create budget' });
+  console.log('Create budget request body:', req.body);
+  res.json({ message: 'Create budget', data: req.body });
 });
+
 app.get('/api/budgets/:id', protect, (req: any, res: Response) => {
   res.json({ message: 'Get budget by id' });
 });
+
 app.put('/api/budgets/:id', protect, (req: any, res: Response) => {
   res.json({ message: 'Update budget' });
 });
+
 app.delete('/api/budgets/:id', protect, (req: any, res: Response) => {
   res.json({ message: 'Delete budget' });
 });
@@ -104,15 +125,20 @@ app.delete('/api/budgets/:id', protect, (req: any, res: Response) => {
 app.get('/api/goals', protect, (req: any, res: Response) => {
   res.json({ message: 'Get all goals' });
 });
+
 app.post('/api/goals', protect, (req: any, res: Response) => {
-  res.json({ message: 'Create goal' });
+  console.log('Create goal request body:', req.body);
+  res.json({ message: 'Create goal', data: req.body });
 });
+
 app.get('/api/goals/:id', protect, (req: any, res: Response) => {
   res.json({ message: 'Get goal by id' });
 });
+
 app.put('/api/goals/:id', protect, (req: any, res: Response) => {
   res.json({ message: 'Update goal' });
 });
+
 app.delete('/api/goals/:id', protect, (req: any, res: Response) => {
   res.json({ message: 'Delete goal' });
 });
@@ -121,15 +147,20 @@ app.delete('/api/goals/:id', protect, (req: any, res: Response) => {
 app.get('/api/investments', protect, (req: any, res: Response) => {
   res.json({ message: 'Get all investments' });
 });
+
 app.post('/api/investments', protect, (req: any, res: Response) => {
-  res.json({ message: 'Create investment' });
+  console.log('Create investment request body:', req.body);
+  res.json({ message: 'Create investment', data: req.body });
 });
+
 app.get('/api/investments/:id', protect, (req: any, res: Response) => {
   res.json({ message: 'Get investment by id' });
 });
+
 app.put('/api/investments/:id', protect, (req: any, res: Response) => {
   res.json({ message: 'Update investment' });
 });
+
 app.delete('/api/investments/:id', protect, (req: any, res: Response) => {
   res.json({ message: 'Delete investment' });
 });
