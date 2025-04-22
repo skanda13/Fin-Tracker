@@ -31,7 +31,7 @@ if (process.env.NODE_ENV === 'development') {
 
 // Enable CORS
 app.use(cors({
-  origin: ['http://localhost:8080', 'http://localhost:5173', 'http://localhost:8081'],
+  origin: ['http://localhost:8080', 'http://localhost:5173', 'http://localhost:8081', 'https://personal-finance-tracker-r1ri.onrender.com', '*'],
   credentials: true
 }));
 
