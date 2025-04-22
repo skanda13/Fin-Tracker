@@ -35,6 +35,7 @@ const AuthContext = createContext<AuthContextType>({
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const api = useApi();
 
   // Helper to check if user is logged in
@@ -42,19 +43,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       const token = localStorage.getItem('token');
       if (token) {
-        const userData = await api.get('/api/users/me');
+        const userData = await api.get('/api/auth/me');
         if (userData) {
           setUser(userData);
+          setIsAuthenticated(true);
           return true;
-        } else {
-          localStorage.removeItem('token');
-          return false;
         }
       }
+      localStorage.removeItem('token');
+      setUser(null);
+      setIsAuthenticated(false);
       return false;
     } catch (error) {
       console.error('Auth check failed:', error);
       localStorage.removeItem('token');
+      setUser(null);
+      setIsAuthenticated(false);
       return false;
     }
   };
@@ -72,9 +76,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const login = async (email: string, password: string) => {
     try {
-      console.log('Calling login API...');
+      setLoading(true);
       const response = await api.post('/api/auth/login', { email, password });
-      console.log('Login API response:', response);
       if (response && response.token) {
         localStorage.setItem('token', response.token);
         setUser({
@@ -83,16 +86,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           email: response.email,
           settings: response.settings
         });
-        console.log('User set in context:', {
-          _id: response._id,
-          name: response.name,
-          email: response.email
-        });
+        setIsAuthenticated(true);
+        setLoading(false);
         return true;
       }
+      setLoading(false);
       return false;
     } catch (error) {
       console.error('Login failed:', error);
+      setLoading(false);
       return false;
     }
   };
@@ -128,25 +130,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
+    setIsAuthenticated(false);
   };
 
-  // Update user data without re-authenticating
   const updateUserData = (userData: User) => {
     setUser(userData);
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        login,
-        signup,
-        logout,
-        isAuthenticated: !!user,
-        updateUserData,
-      }}
-    >
+    <AuthContext.Provider value={{
+      user,
+      loading,
+      login,
+      signup,
+      logout,
+      isAuthenticated,
+      updateUserData
+    }}>
       {children}
     </AuthContext.Provider>
   );

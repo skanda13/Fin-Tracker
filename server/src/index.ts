@@ -223,14 +223,16 @@ app.delete('/api/investments/:id', protect, (req: any, res: Response) => {
 const clientBuildPath = path.join(__dirname, '../../dist');
 if (fs.existsSync(clientBuildPath)) {
   console.log('Serving static files from:', clientBuildPath);
+  
+  // Serve static files
   app.use(express.static(clientBuildPath));
   
-  // Handle client-side routing
+  // Handle client-side routing - serve index.html for all non-API routes
   app.get('*', (req: Request, res: Response, next: NextFunction) => {
-    if (!req.path.startsWith('/api')) {
-      res.sendFile(path.join(clientBuildPath, 'index.html'));
-    } else {
+    if (req.path.startsWith('/api')) {
       next();
+    } else {
+      res.sendFile(path.join(clientBuildPath, 'index.html'));
     }
   });
 } else {
