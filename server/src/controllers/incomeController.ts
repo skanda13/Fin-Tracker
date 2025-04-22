@@ -1,123 +1,101 @@
 import { Request, Response } from 'express';
 import Income from '../models/Income';
-import mongoose from 'mongoose';
 
-// @desc    Get all incomes for a user
-// @route   GET /api/incomes
-// @access  Private
+// Get all incomes for the authenticated user
 export const getIncomes = async (req: Request, res: Response) => {
   try {
-    const userId = req.user._id;
-    
-    const incomes = await Income.find({ userId }).sort({ date: -1 });
-    
+    const incomes = await Income.find({ userId: req.user._id });
     res.status(200).json(incomes);
-  } catch (error) {
-    console.error('Error fetching incomes:', error);
-    res.status(500).json({ message: 'Server error', error: error instanceof Error ? error.message : 'Unknown error' });
+  } catch (error: any) {
+    res.status(500).json({ message: 'Error fetching incomes', error: error.message });
   }
 };
 
-// @desc    Get single income by ID
-// @route   GET /api/incomes/:id
-// @access  Private
+// Get a single income by ID
 export const getIncomeById = async (req: Request, res: Response) => {
   try {
-    const userId = req.user._id;
-    
-    const income = await Income.findOne({ 
+    const income = await Income.findOne({
       _id: req.params.id,
-      userId 
+      userId: req.user._id
     });
-    
+
     if (!income) {
       return res.status(404).json({ message: 'Income not found' });
     }
-    
+
     res.status(200).json(income);
-  } catch (error) {
-    console.error('Error fetching income:', error);
-    res.status(500).json({ message: 'Server error', error: error instanceof Error ? error.message : 'Unknown error' });
+  } catch (error: any) {
+    res.status(500).json({ message: 'Error fetching income', error: error.message });
   }
 };
 
-// @desc    Create a new income
-// @route   POST /api/incomes
-// @access  Private
+// Create a new income
 export const createIncome = async (req: Request, res: Response) => {
   try {
-    const userId = req.user._id;
-    
-    const { source, amount, date, category, notes } = req.body;
-    
-    const income = await Income.create({
-      source,
+    const { name, amount, date, category, notes } = req.body;
+
+    if (!name || !amount || !date) {
+      return res.status(400).json({ message: 'Name, amount, and date are required' });
+    }
+
+    const income = new Income({
+      name,
       amount,
-      date: date || new Date(),
+      date,
       category,
       notes,
-      userId
+      userId: req.user._id
     });
-    
-    res.status(201).json(income);
-  } catch (error) {
-    console.error('Error creating income:', error);
-    res.status(500).json({ message: 'Server error', error: error instanceof Error ? error.message : 'Unknown error' });
+
+    const savedIncome = await income.save();
+    res.status(201).json(savedIncome);
+  } catch (error: any) {
+    res.status(500).json({ message: 'Error creating income', error: error.message });
   }
 };
 
-// @desc    Update an income
-// @route   PUT /api/incomes/:id
-// @access  Private
+// Update an income
 export const updateIncome = async (req: Request, res: Response) => {
   try {
-    const userId = req.user._id;
-    
-    const { source, amount, date, category, notes } = req.body;
-    
-    const income = await Income.findOne({ 
+    const { name, amount, date, category, notes } = req.body;
+
+    const income = await Income.findOne({
       _id: req.params.id,
-      userId
+      userId: req.user._id
     });
-    
+
     if (!income) {
       return res.status(404).json({ message: 'Income not found' });
     }
-    
-    income.source = source || income.source;
+
+    income.name = name || income.name;
     income.amount = amount || income.amount;
-    income.date = date ? new Date(date) : income.date;
+    income.date = date || income.date;
     income.category = category || income.category;
-    income.notes = notes !== undefined ? notes : income.notes;
-    
-    await income.save();
-    
-    res.status(200).json(income);
-  } catch (error) {
-    console.error('Error updating income:', error);
-    res.status(500).json({ message: 'Server error', error: error instanceof Error ? error.message : 'Unknown error' });
+    income.notes = notes || income.notes;
+
+    const updatedIncome = await income.save();
+    res.status(200).json(updatedIncome);
+  } catch (error: any) {
+    res.status(500).json({ message: 'Error updating income', error: error.message });
   }
 };
 
-// @desc    Delete an income
-// @route   DELETE /api/incomes/:id
-// @access  Private
+// Delete an income
 export const deleteIncome = async (req: Request, res: Response) => {
   try {
-    const userId = req.user._id;
-    
-    const income = await Income.findOneAndDelete({ 
+    const income = await Income.findOne({
       _id: req.params.id,
-      userId
+      userId: req.user._id
     });
-    
+
     if (!income) {
       return res.status(404).json({ message: 'Income not found' });
     }
-    
-    res.status(200).json({ message: 'Income removed' });
-  } catch (error) {
-    console.error('Error deleting income:', error);
-    res.status(500).json({ message: 'Server error', error: error instanceof Error ? error.message : 'Unknown error' });
+
+    await income.deleteOne();
+    res.status(200).json({ message: 'Income deleted successfully' });
+  } catch (error: any) {
+    res.status(500).json({ message: 'Error deleting income', error: error.message });
   }
 }; 

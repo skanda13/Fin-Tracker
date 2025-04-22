@@ -5,8 +5,45 @@ import morgan from 'morgan';
 import connectDB from './config/db';
 import path from 'path';
 import { protect } from './middleware/authMiddleware';
-import { loginUser, registerUser, getMe, updateProfile } from './controllers/authController';
 import fs from 'fs';
+
+// Import all controllers
+import { loginUser, registerUser, getMe, updateProfile } from './controllers/authController';
+import { 
+  getInvestments, 
+  getInvestmentById, 
+  createInvestment, 
+  updateInvestment, 
+  deleteInvestment 
+} from './controllers/investmentController';
+import {
+  getIncomes,
+  getIncomeById,
+  createIncome,
+  updateIncome,
+  deleteIncome
+} from './controllers/incomeController';
+import {
+  getExpenses,
+  getExpenseById,
+  createExpense,
+  updateExpense,
+  deleteExpense
+} from './controllers/expenseController';
+import {
+  getBudgets,
+  getBudgetById,
+  createBudget,
+  updateBudget,
+  deleteBudget
+} from './controllers/budgetController';
+import {
+  getGoals,
+  getGoalById,
+  createGoal,
+  updateGoal,
+  deleteGoal
+} from './controllers/goalController';
 
 // Load environment variables
 dotenv.config();
@@ -82,119 +119,39 @@ app.get('/api/auth/me', protect, getMe);
 app.put('/api/users/profile', protect, updateProfile);
 
 // Income Routes
-app.get('/api/incomes', protect, (req: Request, res: Response) => {
-  res.json({ message: 'Get all incomes' });
-});
-
-app.post('/api/incomes', protect, async (req: Request, res: Response) => {
-  try {
-    console.log('Create income request body:', req.body);
-    res.json({ message: 'Create income', data: req.body });
-  } catch (error: any) {
-    console.error('Create income error:', error);
-    res.status(500).json({ message: 'Failed to create income', error: error.message });
-  }
-});
-
-app.get('/api/incomes/:id', protect, (req: any, res: Response) => {
-  res.json({ message: 'Get income by id' });
-});
-
-app.put('/api/incomes/:id', protect, (req: any, res: Response) => {
-  res.json({ message: 'Update income' });
-});
-
-app.delete('/api/incomes/:id', protect, (req: any, res: Response) => {
-  res.json({ message: 'Delete income' });
-});
+app.get('/api/incomes', protect, getIncomes);
+app.post('/api/incomes', protect, createIncome);
+app.get('/api/incomes/:id', protect, getIncomeById);
+app.put('/api/incomes/:id', protect, updateIncome);
+app.delete('/api/incomes/:id', protect, deleteIncome);
 
 // Expense Routes
-app.get('/api/expenses', protect, (req: any, res: Response) => {
-  res.json({ message: 'Get all expenses' });
-});
-
-app.post('/api/expenses', protect, (req: any, res: Response) => {
-  console.log('Create expense request body:', req.body);
-  res.json({ message: 'Create expense', data: req.body });
-});
-
-app.get('/api/expenses/:id', protect, (req: any, res: Response) => {
-  res.json({ message: 'Get expense by id' });
-});
-
-app.put('/api/expenses/:id', protect, (req: any, res: Response) => {
-  res.json({ message: 'Update expense' });
-});
-
-app.delete('/api/expenses/:id', protect, (req: any, res: Response) => {
-  res.json({ message: 'Delete expense' });
-});
+app.get('/api/expenses', protect, getExpenses);
+app.post('/api/expenses', protect, createExpense);
+app.get('/api/expenses/:id', protect, getExpenseById);
+app.put('/api/expenses/:id', protect, updateExpense);
+app.delete('/api/expenses/:id', protect, deleteExpense);
 
 // Budget Routes
-app.get('/api/budgets', protect, (req: any, res: Response) => {
-  res.json({ message: 'Get all budgets' });
-});
-
-app.post('/api/budgets', protect, (req: any, res: Response) => {
-  console.log('Create budget request body:', req.body);
-  res.json({ message: 'Create budget', data: req.body });
-});
-
-app.get('/api/budgets/:id', protect, (req: any, res: Response) => {
-  res.json({ message: 'Get budget by id' });
-});
-
-app.put('/api/budgets/:id', protect, (req: any, res: Response) => {
-  res.json({ message: 'Update budget' });
-});
-
-app.delete('/api/budgets/:id', protect, (req: any, res: Response) => {
-  res.json({ message: 'Delete budget' });
-});
+app.get('/api/budgets', protect, getBudgets);
+app.post('/api/budgets', protect, createBudget);
+app.get('/api/budgets/:id', protect, getBudgetById);
+app.put('/api/budgets/:id', protect, updateBudget);
+app.delete('/api/budgets/:id', protect, deleteBudget);
 
 // Goal Routes
-app.get('/api/goals', protect, (req: any, res: Response) => {
-  res.json({ message: 'Get all goals' });
-});
-
-app.post('/api/goals', protect, (req: any, res: Response) => {
-  console.log('Create goal request body:', req.body);
-  res.json({ message: 'Create goal', data: req.body });
-});
-
-app.get('/api/goals/:id', protect, (req: any, res: Response) => {
-  res.json({ message: 'Get goal by id' });
-});
-
-app.put('/api/goals/:id', protect, (req: any, res: Response) => {
-  res.json({ message: 'Update goal' });
-});
-
-app.delete('/api/goals/:id', protect, (req: any, res: Response) => {
-  res.json({ message: 'Delete goal' });
-});
+app.get('/api/goals', protect, getGoals);
+app.post('/api/goals', protect, createGoal);
+app.get('/api/goals/:id', protect, getGoalById);
+app.put('/api/goals/:id', protect, updateGoal);
+app.delete('/api/goals/:id', protect, deleteGoal);
 
 // Investment Routes
-app.get('/api/investments', protect, (req: any, res: Response) => {
-  res.json({ message: 'Get all investments' });
-});
-
-app.post('/api/investments', protect, (req: any, res: Response) => {
-  console.log('Create investment request body:', req.body);
-  res.json({ message: 'Create investment', data: req.body });
-});
-
-app.get('/api/investments/:id', protect, (req: any, res: Response) => {
-  res.json({ message: 'Get investment by id' });
-});
-
-app.put('/api/investments/:id', protect, (req: any, res: Response) => {
-  res.json({ message: 'Update investment' });
-});
-
-app.delete('/api/investments/:id', protect, (req: any, res: Response) => {
-  res.json({ message: 'Delete investment' });
-});
+app.get('/api/investments', protect, getInvestments);
+app.post('/api/investments', protect, createInvestment);
+app.get('/api/investments/:id', protect, getInvestmentById);
+app.put('/api/investments/:id', protect, updateInvestment);
+app.delete('/api/investments/:id', protect, deleteInvestment);
 
 // Serve static files from the React app if the build directory exists
 const clientBuildPath = path.join(__dirname, '../../dist');

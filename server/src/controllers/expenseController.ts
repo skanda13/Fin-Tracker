@@ -1,20 +1,15 @@
 import { Request, Response } from 'express';
 import Expense from '../models/Expense';
-import mongoose from 'mongoose';
 
 // @desc    Get all expenses for a user
 // @route   GET /api/expenses
 // @access  Private
 export const getExpenses = async (req: Request, res: Response) => {
   try {
-    const userId = req.user._id;
-    
-    const expenses = await Expense.find({ userId }).sort({ date: -1 });
-    
+    const expenses = await Expense.find({ userId: req.user._id });
     res.status(200).json(expenses);
-  } catch (error) {
-    console.error('Error fetching expenses:', error);
-    res.status(500).json({ message: 'Server error', error: error instanceof Error ? error.message : 'Unknown error' });
+  } catch (error: any) {
+    res.status(500).json({ message: 'Error fetching expenses', error: error.message });
   }
 };
 
@@ -23,21 +18,18 @@ export const getExpenses = async (req: Request, res: Response) => {
 // @access  Private
 export const getExpenseById = async (req: Request, res: Response) => {
   try {
-    const userId = req.user._id;
-    
-    const expense = await Expense.findOne({ 
+    const expense = await Expense.findOne({
       _id: req.params.id,
-      userId 
+      userId: req.user._id
     });
-    
+
     if (!expense) {
       return res.status(404).json({ message: 'Expense not found' });
     }
-    
+
     res.status(200).json(expense);
-  } catch (error) {
-    console.error('Error fetching expense:', error);
-    res.status(500).json({ message: 'Server error', error: error instanceof Error ? error.message : 'Unknown error' });
+  } catch (error: any) {
+    res.status(500).json({ message: 'Error fetching expense', error: error.message });
   }
 };
 
@@ -46,24 +38,25 @@ export const getExpenseById = async (req: Request, res: Response) => {
 // @access  Private
 export const createExpense = async (req: Request, res: Response) => {
   try {
-    const userId = req.user._id;
-    
-    const { description, amount, date, category, paymentMethod, notes } = req.body;
-    
-    const expense = await Expense.create({
-      description,
+    const { name, amount, date, category, notes } = req.body;
+
+    if (!name || !amount || !date) {
+      return res.status(400).json({ message: 'Name, amount, and date are required' });
+    }
+
+    const expense = new Expense({
+      name,
       amount,
-      date: date || new Date(),
+      date,
       category,
-      paymentMethod,
       notes,
-      userId
+      userId: req.user._id
     });
-    
-    res.status(201).json(expense);
-  } catch (error) {
-    console.error('Error creating expense:', error);
-    res.status(500).json({ message: 'Server error', error: error instanceof Error ? error.message : 'Unknown error' });
+
+    const savedExpense = await expense.save();
+    res.status(201).json(savedExpense);
+  } catch (error: any) {
+    res.status(500).json({ message: 'Error creating expense', error: error.message });
   }
 };
 
@@ -72,32 +65,27 @@ export const createExpense = async (req: Request, res: Response) => {
 // @access  Private
 export const updateExpense = async (req: Request, res: Response) => {
   try {
-    const userId = req.user._id;
-    
-    const { description, amount, date, category, paymentMethod, notes } = req.body;
-    
-    const expense = await Expense.findOne({ 
+    const { name, amount, date, category, notes } = req.body;
+
+    const expense = await Expense.findOne({
       _id: req.params.id,
-      userId
+      userId: req.user._id
     });
-    
+
     if (!expense) {
       return res.status(404).json({ message: 'Expense not found' });
     }
-    
-    expense.description = description || expense.description;
+
+    expense.name = name || expense.name;
     expense.amount = amount || expense.amount;
-    expense.date = date ? new Date(date) : expense.date;
+    expense.date = date || expense.date;
     expense.category = category || expense.category;
-    expense.paymentMethod = paymentMethod || expense.paymentMethod;
-    expense.notes = notes !== undefined ? notes : expense.notes;
-    
-    await expense.save();
-    
-    res.status(200).json(expense);
-  } catch (error) {
-    console.error('Error updating expense:', error);
-    res.status(500).json({ message: 'Server error', error: error instanceof Error ? error.message : 'Unknown error' });
+    expense.notes = notes || expense.notes;
+
+    const updatedExpense = await expense.save();
+    res.status(200).json(updatedExpense);
+  } catch (error: any) {
+    res.status(500).json({ message: 'Error updating expense', error: error.message });
   }
 };
 
@@ -106,20 +94,18 @@ export const updateExpense = async (req: Request, res: Response) => {
 // @access  Private
 export const deleteExpense = async (req: Request, res: Response) => {
   try {
-    const userId = req.user._id;
-    
-    const expense = await Expense.findOneAndDelete({ 
+    const expense = await Expense.findOne({
       _id: req.params.id,
-      userId
+      userId: req.user._id
     });
-    
+
     if (!expense) {
       return res.status(404).json({ message: 'Expense not found' });
     }
-    
-    res.status(200).json({ message: 'Expense removed' });
-  } catch (error) {
-    console.error('Error deleting expense:', error);
-    res.status(500).json({ message: 'Server error', error: error instanceof Error ? error.message : 'Unknown error' });
+
+    await expense.deleteOne();
+    res.status(200).json({ message: 'Expense deleted successfully' });
+  } catch (error: any) {
+    res.status(500).json({ message: 'Error deleting expense', error: error.message });
   }
 }; 
