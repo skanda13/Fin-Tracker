@@ -220,8 +220,9 @@ app.delete('/api/investments/:id', protect, (req: any, res: Response) => {
 });
 
 // Serve static files from the React app if the build directory exists
-const clientBuildPath = path.join(__dirname, '../../client/build');
+const clientBuildPath = path.join(__dirname, '../client');
 if (fs.existsSync(clientBuildPath)) {
+  console.log('Serving static files from:', clientBuildPath);
   app.use(express.static(clientBuildPath));
   
   // Handle client-side routing
@@ -229,7 +230,8 @@ if (fs.existsSync(clientBuildPath)) {
     res.sendFile(path.join(clientBuildPath, 'index.html'));
   });
 } else {
-  console.log('Client build directory not found. API-only mode enabled.');
+  console.log('Client build directory not found at:', clientBuildPath);
+  console.log('Current directory:', __dirname);
   
   // API-only mode handler
   app.get('*', (req: Request, res: Response) => {
