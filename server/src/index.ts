@@ -29,6 +29,12 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
+// Log all incoming requests
+app.use((req, res, next) => {
+  console.log(`Request received: ${req.method} ${req.url}`);
+  next();
+});
+
 // Enable CORS
 app.use(cors({
   origin: ['http://localhost:8080', 'http://localhost:5173', 'http://localhost:8081', 'https://personal-finance-tracker-r1ri.onrender.com', '*'],
@@ -37,6 +43,18 @@ app.use(cors({
 
 // Routes
 app.use('/api/auth', authRoutes);
+
+// Basic home route
+app.get('/', (req, res) => {
+  console.log('Root endpoint accessed');
+  res.json({ message: 'Welcome to Finance Tracker API' });
+});
+
+// Add a test route to verify authRoutes are loaded
+app.get('/api/test', (req, res) => {
+  console.log('Test endpoint accessed');
+  res.json({ message: 'API test endpoint working' });
+});
 
 // Protected route to get current user
 app.get('/api/users/me', protect, (req: any, res: Response) => {
@@ -57,13 +75,9 @@ app.use('/api/budgets', protect, budgetRoutes);
 app.use('/api/goals', protect, goalRoutes);
 app.use('/api/investments', protect, investmentRoutes);
 
-// Basic home route
-app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to Finance Tracker API' });
-});
-
-// Error handling middleware
+// Error handling middleware - should be AFTER all other routes
 app.use((req, res) => {
+  console.log(`404 Not Found: ${req.method} ${req.url}`);
   res.status(404).json({ message: 'Route not found' });
 });
 
