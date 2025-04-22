@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: finance-tracker
+    env: node
+    buildCommand: npm run build
+    startCommand: npm run start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: MONGODB_URI
+        value: mongodb+srv://skanda:1234@cluster0.cuibtyb.mongodb.net/fin_tracker?
+      - key: JWT_SECRET
+        value: your_jwt_secret_here
+      - key: CORS_ORIGIN
+        value: https://personal-finance-tracker-r1ri.onrender.com 

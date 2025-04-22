@@ -30,16 +30,13 @@ app.use(morgan('dev'));
 
 // Enable CORS
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://personal-finance-tracker-r1ri.onrender.com']
-    : ['http://localhost:8080', 'http://localhost:5173', 'http://localhost:8081'],
+  origin: process.env.CORS_ORIGIN || 'https://personal-finance-tracker-r1ri.onrender.com',
   credentials: true
 }));
 
-// Log all incoming requests
-app.use((req, res, next) => {
-  console.log(`Request received: ${req.method} ${req.url}`);
-  next();
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
 });
 
 // Basic home route
