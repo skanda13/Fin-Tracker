@@ -4,16 +4,8 @@ import dotenv from 'dotenv';
 import morgan from 'morgan';
 import connectDB from './config/db';
 import path from 'path';
-
-// Import routes
-import authRoutes from './routes/authRoutes';
-import incomeRoutes from './routes/incomeRoutes';
-import expenseRoutes from './routes/expenseRoutes';
-import budgetRoutes from './routes/budgetRoutes';
-import goalRoutes from './routes/goalRoutes';
-import investmentRoutes from './routes/investmentRoutes';
 import { protect } from './middleware/authMiddleware';
-import { updateProfile } from './controllers/authController';
+import { loginUser, registerUser, getMe, updateProfile } from './controllers/authController';
 
 // Load environment variables
 dotenv.config();
@@ -49,28 +41,98 @@ app.get('/api/test', (req, res) => {
   res.json({ message: 'API test endpoint working' });
 });
 
-// Auth routes
-console.log('Setting up auth routes...');
-app.use('/api/auth', authRoutes);
-console.log('Auth routes setup complete');
+// Auth Routes
+app.post('/api/auth/register', registerUser);
+app.post('/api/auth/login', loginUser);
+app.get('/api/auth/me', protect, getMe);
 
-// Protected routes
-app.get('/api/users/me', protect, (req: any, res: Response) => {
-  res.json({
-    _id: req.user._id,
-    name: req.user.name,
-    email: req.user.email,
-    settings: req.user.settings
-  });
-});
-
+// User Routes
 app.put('/api/users/profile', protect, updateProfile);
 
-app.use('/api/incomes', protect, incomeRoutes);
-app.use('/api/expenses', protect, expenseRoutes);
-app.use('/api/budgets', protect, budgetRoutes);
-app.use('/api/goals', protect, goalRoutes);
-app.use('/api/investments', protect, investmentRoutes);
+// Income Routes
+app.get('/api/incomes', protect, (req: any, res: Response) => {
+  res.json({ message: 'Get all incomes' });
+});
+app.post('/api/incomes', protect, (req: any, res: Response) => {
+  res.json({ message: 'Create income' });
+});
+app.get('/api/incomes/:id', protect, (req: any, res: Response) => {
+  res.json({ message: 'Get income by id' });
+});
+app.put('/api/incomes/:id', protect, (req: any, res: Response) => {
+  res.json({ message: 'Update income' });
+});
+app.delete('/api/incomes/:id', protect, (req: any, res: Response) => {
+  res.json({ message: 'Delete income' });
+});
+
+// Expense Routes
+app.get('/api/expenses', protect, (req: any, res: Response) => {
+  res.json({ message: 'Get all expenses' });
+});
+app.post('/api/expenses', protect, (req: any, res: Response) => {
+  res.json({ message: 'Create expense' });
+});
+app.get('/api/expenses/:id', protect, (req: any, res: Response) => {
+  res.json({ message: 'Get expense by id' });
+});
+app.put('/api/expenses/:id', protect, (req: any, res: Response) => {
+  res.json({ message: 'Update expense' });
+});
+app.delete('/api/expenses/:id', protect, (req: any, res: Response) => {
+  res.json({ message: 'Delete expense' });
+});
+
+// Budget Routes
+app.get('/api/budgets', protect, (req: any, res: Response) => {
+  res.json({ message: 'Get all budgets' });
+});
+app.post('/api/budgets', protect, (req: any, res: Response) => {
+  res.json({ message: 'Create budget' });
+});
+app.get('/api/budgets/:id', protect, (req: any, res: Response) => {
+  res.json({ message: 'Get budget by id' });
+});
+app.put('/api/budgets/:id', protect, (req: any, res: Response) => {
+  res.json({ message: 'Update budget' });
+});
+app.delete('/api/budgets/:id', protect, (req: any, res: Response) => {
+  res.json({ message: 'Delete budget' });
+});
+
+// Goal Routes
+app.get('/api/goals', protect, (req: any, res: Response) => {
+  res.json({ message: 'Get all goals' });
+});
+app.post('/api/goals', protect, (req: any, res: Response) => {
+  res.json({ message: 'Create goal' });
+});
+app.get('/api/goals/:id', protect, (req: any, res: Response) => {
+  res.json({ message: 'Get goal by id' });
+});
+app.put('/api/goals/:id', protect, (req: any, res: Response) => {
+  res.json({ message: 'Update goal' });
+});
+app.delete('/api/goals/:id', protect, (req: any, res: Response) => {
+  res.json({ message: 'Delete goal' });
+});
+
+// Investment Routes
+app.get('/api/investments', protect, (req: any, res: Response) => {
+  res.json({ message: 'Get all investments' });
+});
+app.post('/api/investments', protect, (req: any, res: Response) => {
+  res.json({ message: 'Create investment' });
+});
+app.get('/api/investments/:id', protect, (req: any, res: Response) => {
+  res.json({ message: 'Get investment by id' });
+});
+app.put('/api/investments/:id', protect, (req: any, res: Response) => {
+  res.json({ message: 'Update investment' });
+});
+app.delete('/api/investments/:id', protect, (req: any, res: Response) => {
+  res.json({ message: 'Delete investment' });
+});
 
 // Error handling middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
