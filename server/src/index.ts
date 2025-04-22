@@ -220,14 +220,18 @@ app.delete('/api/investments/:id', protect, (req: any, res: Response) => {
 });
 
 // Serve static files from the React app if the build directory exists
-const clientBuildPath = path.join(__dirname, '../client');
+const clientBuildPath = path.join(__dirname, '../../dist');
 if (fs.existsSync(clientBuildPath)) {
   console.log('Serving static files from:', clientBuildPath);
   app.use(express.static(clientBuildPath));
   
   // Handle client-side routing
-  app.get('*', (req: Request, res: Response) => {
-    res.sendFile(path.join(clientBuildPath, 'index.html'));
+  app.get('*', (req: Request, res: Response, next: NextFunction) => {
+    if (!req.path.startsWith('/api')) {
+      res.sendFile(path.join(clientBuildPath, 'index.html'));
+    } else {
+      next();
+    }
   });
 } else {
   console.log('Client build directory not found at:', clientBuildPath);
