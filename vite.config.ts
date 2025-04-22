@@ -10,6 +10,13 @@ export default defineConfig(({ mode }) => ({
     outDir: 'dist',
     emptyOutDir: true,
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+        },
+      },
+    },
   },
   server: {
     host: "::",

@@ -41,28 +41,21 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-// Health check endpoint
-app.get('/health', (req, res) => {
+// API Routes
+app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
-// Basic home route
-app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to Finance Tracker API' });
-});
-
-// Test route
 app.get('/api/test', (req, res) => {
   res.json({ message: 'API test endpoint working' });
 });
 
-// Test POST route
 app.post('/api/test', (req, res) => {
   console.log('Test POST request body:', req.body);
   res.json({ message: 'POST test endpoint working', data: req.body });
 });
 
-// Auth Routes with error handling
+// Auth Routes
 app.post('/api/auth/register', async (req: Request, res: Response) => {
   try {
     console.log('Register request body:', req.body);
@@ -73,14 +66,6 @@ app.post('/api/auth/register', async (req: Request, res: Response) => {
   }
 });
 
-// Handle GET requests to POST endpoints
-app.get('/api/auth/register', (req: Request, res: Response) => {
-  res.status(405).json({ 
-    message: 'Method Not Allowed',
-    error: 'This endpoint only accepts POST requests'
-  });
-});
-
 app.post('/api/auth/login', async (req: Request, res: Response) => {
   try {
     console.log('Login request body:', req.body);
@@ -89,14 +74,6 @@ app.post('/api/auth/login', async (req: Request, res: Response) => {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Login failed', error: error.message });
   }
-});
-
-// Handle GET requests to POST endpoints
-app.get('/api/auth/login', (req: Request, res: Response) => {
-  res.status(405).json({ 
-    message: 'Method Not Allowed',
-    error: 'This endpoint only accepts POST requests'
-  });
 });
 
 app.get('/api/auth/me', protect, getMe);
@@ -228,11 +205,11 @@ if (fs.existsSync(clientBuildPath)) {
   app.use(express.static(clientBuildPath));
   
   // Handle client-side routing - serve index.html for all non-API routes
-  app.get('*', (req: Request, res: Response, next: NextFunction) => {
-    if (req.path.startsWith('/api')) {
-      next();
-    } else {
+  app.get('*', (req: Request, res: Response) => {
+    if (!req.path.startsWith('/api')) {
       res.sendFile(path.join(clientBuildPath, 'index.html'));
+    } else {
+      res.status(404).json({ message: 'API endpoint not found' });
     }
   });
 } else {
@@ -259,12 +236,6 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     message: 'Internal server error',
     error: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
   });
-});
-
-// 404 handler
-app.use((req, res) => {
-  console.log(`404 Not Found: ${req.method} ${req.url}`);
-  res.status(404).json({ message: 'Route not found' });
 });
 
 app.listen(PORT, () => {
