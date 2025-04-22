@@ -23,10 +23,10 @@ app.use(morgan('dev'));
 
 // Enable CORS with specific options
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'https://personal-finance-tracker-r1ri.onrender.com',
+  origin: process.env.CORS_ORIGIN || '*',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
 }));
 
 // Handle preflight requests
@@ -47,22 +47,51 @@ app.get('/api/test', (req, res) => {
   res.json({ message: 'API test endpoint working' });
 });
 
-// Auth Routes
-app.post('/api/auth/register', registerUser);
-app.post('/api/auth/login', loginUser);
+// Test POST route
+app.post('/api/test', (req, res) => {
+  console.log('Test POST request body:', req.body);
+  res.json({ message: 'POST test endpoint working', data: req.body });
+});
+
+// Auth Routes with error handling
+app.post('/api/auth/register', async (req: Request, res: Response) => {
+  try {
+    console.log('Register request body:', req.body);
+    await registerUser(req, res);
+  } catch (error: any) {
+    console.error('Registration error:', error);
+    res.status(500).json({ message: 'Registration failed', error: error.message });
+  }
+});
+
+app.post('/api/auth/login', async (req: Request, res: Response) => {
+  try {
+    console.log('Login request body:', req.body);
+    await loginUser(req, res);
+  } catch (error: any) {
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'Login failed', error: error.message });
+  }
+});
+
 app.get('/api/auth/me', protect, getMe);
 
 // User Routes
 app.put('/api/users/profile', protect, updateProfile);
 
 // Income Routes
-app.get('/api/incomes', protect, (req: any, res: Response) => {
+app.get('/api/incomes', protect, (req: Request, res: Response) => {
   res.json({ message: 'Get all incomes' });
 });
 
-app.post('/api/incomes', protect, (req: any, res: Response) => {
-  console.log('Create income request body:', req.body);
-  res.json({ message: 'Create income', data: req.body });
+app.post('/api/incomes', protect, async (req: Request, res: Response) => {
+  try {
+    console.log('Create income request body:', req.body);
+    res.json({ message: 'Create income', data: req.body });
+  } catch (error: any) {
+    console.error('Create income error:', error);
+    res.status(500).json({ message: 'Failed to create income', error: error.message });
+  }
 });
 
 app.get('/api/incomes/:id', protect, (req: any, res: Response) => {
@@ -168,7 +197,10 @@ app.delete('/api/investments/:id', protect, (req: any, res: Response) => {
 // Error handling middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(err.stack);
-  res.status(500).json({ message: 'Something broke!' });
+  res.status(500).json({ 
+    message: 'Internal server error',
+    error: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+  });
 });
 
 // 404 handler
