@@ -46,13 +46,16 @@ export const getExpenseById = async (req: Request, res: Response) => {
 export const createExpense = async (req: Request, res: Response) => {
   try {
     console.log('Creating expense with data:', req.body);
-    const { name, amount, date, category, notes } = req.body;
+    const { source, name, amount, date, category, notes } = req.body;
 
-    if (!name || !amount || !date) {
-      console.log('Missing required fields:', { name, amount, date });
+    // Use source if name is not provided
+    const expenseName = name || source;
+
+    if (!expenseName || !amount || !date) {
+      console.log('Missing required fields:', { name: expenseName, amount, date });
       return res.status(400).json({ 
-        message: 'Name, amount, and date are required',
-        received: { name, amount, date }
+        message: 'Name/Source, amount, and date are required',
+        received: { name: expenseName, amount, date }
       });
     }
 
@@ -77,7 +80,7 @@ export const createExpense = async (req: Request, res: Response) => {
     }
 
     const expense = new Expense({
-      name,
+      name: expenseName,
       amount: numericAmount,
       date: validDate,
       category,
@@ -107,7 +110,7 @@ export const createExpense = async (req: Request, res: Response) => {
 export const updateExpense = async (req: Request, res: Response) => {
   try {
     console.log('Updating expense:', req.params.id, 'with data:', req.body);
-    const { name, amount, date, category, notes } = req.body;
+    const { source, name, amount, date, category, notes } = req.body;
 
     const expense = await Expense.findOne({
       _id: req.params.id,
@@ -120,7 +123,7 @@ export const updateExpense = async (req: Request, res: Response) => {
     }
 
     // Only update fields that are provided
-    if (name) expense.name = name;
+    if (name || source) expense.name = name || source;
     if (amount !== undefined) {
       const numericAmount = Number(amount);
       if (isNaN(numericAmount) || numericAmount < 0) {
