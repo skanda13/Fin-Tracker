@@ -37,13 +37,9 @@ import {
   updateBudget,
   deleteBudget
 } from './controllers/budgetController';
-import {
-  getGoals,
-  getGoalById,
-  createGoal,
-  updateGoal,
-  deleteGoal
-} from './controllers/goalController';
+
+// Import routes
+import goalRoutes from './routes/goalRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -140,11 +136,7 @@ app.put('/api/budgets/:id', protect, updateBudget);
 app.delete('/api/budgets/:id', protect, deleteBudget);
 
 // Goal Routes
-app.get('/api/goals', protect, getGoals);
-app.post('/api/goals', protect, createGoal);
-app.get('/api/goals/:id', protect, getGoalById);
-app.put('/api/goals/:id', protect, updateGoal);
-app.delete('/api/goals/:id', protect, deleteGoal);
+app.use('/api/goals', goalRoutes);
 
 // Investment Routes
 app.get('/api/investments', protect, getInvestments);

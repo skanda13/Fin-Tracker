@@ -5,7 +5,7 @@ import {
   createGoal, 
   updateGoal, 
   deleteGoal 
-} from '../controllers/financialGoalController';
+} from '../controllers/goalController';
 import { protect } from '../middleware/authMiddleware';
 
 const router = express.Router();
