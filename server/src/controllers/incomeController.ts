@@ -40,13 +40,16 @@ export const getIncomeById = async (req: Request, res: Response) => {
 export const createIncome = async (req: Request, res: Response) => {
   try {
     console.log('Creating income with data:', req.body);
-    const { name, amount, date, category, notes } = req.body;
+    const { source, name, amount, date, category, notes } = req.body;
 
-    if (!name || !amount || !date) {
-      console.log('Missing required fields:', { name, amount, date });
+    // Use source if name is not provided
+    const incomeName = name || source;
+
+    if (!incomeName || !amount || !date) {
+      console.log('Missing required fields:', { name: incomeName, amount, date });
       return res.status(400).json({ 
-        message: 'Name, amount, and date are required',
-        received: { name, amount, date }
+        message: 'Name/Source, amount, and date are required',
+        received: { name: incomeName, amount, date }
       });
     }
 
@@ -71,7 +74,7 @@ export const createIncome = async (req: Request, res: Response) => {
     }
 
     const income = new Income({
-      name,
+      name: incomeName,
       amount: numericAmount,
       date: validDate,
       category,
@@ -99,7 +102,7 @@ export const createIncome = async (req: Request, res: Response) => {
 export const updateIncome = async (req: Request, res: Response) => {
   try {
     console.log('Updating income:', req.params.id, 'with data:', req.body);
-    const { name, amount, date, category, notes } = req.body;
+    const { source, name, amount, date, category, notes } = req.body;
 
     const income = await Income.findOne({
       _id: req.params.id,
@@ -112,7 +115,7 @@ export const updateIncome = async (req: Request, res: Response) => {
     }
 
     // Only update fields that are provided
-    if (name) income.name = name;
+    if (name || source) income.name = name || source;
     if (amount !== undefined) {
       const numericAmount = Number(amount);
       if (isNaN(numericAmount) || numericAmount < 0) {
