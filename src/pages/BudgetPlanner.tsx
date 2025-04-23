@@ -262,7 +262,7 @@ const BudgetPlanner = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <Card className="dark:bg-gray-800 dark:border-gray-700">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg font-semibold flex items-center dark:text-gray-100">
@@ -316,7 +316,7 @@ const BudgetPlanner = () => {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1">
           <Card className="dark:bg-gray-800 dark:border-gray-700">
             <CardHeader>

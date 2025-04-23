@@ -132,34 +132,33 @@ export const updateBudget = async (req: Request, res: Response) => {
   }
 };
 
-// @desc    Update actual amount in a budget
+// @desc    Update actual amount for a budget
 // @route   PATCH /api/budgets/:id/actual
 // @access  Private
 export const updateActualAmount = async (req: Request, res: Response) => {
   try {
     const userId = req.user._id;
-    
     const { actualAmount } = req.body;
-    
-    if (actualAmount === undefined) {
-      return res.status(400).json({ message: 'Actual amount is required' });
+
+    if (actualAmount === undefined || actualAmount < 0) {
+      return res.status(400).json({ message: 'Valid actual amount is required' });
     }
-    
+
     const budget = await Budget.findOne({ 
       _id: req.params.id,
       userId
     });
-    
+
     if (!budget) {
       return res.status(404).json({ message: 'Budget not found' });
     }
-    
+
     budget.actualAmount = actualAmount;
     await budget.save();
-    
+
     res.status(200).json(budget);
   } catch (error) {
-    console.error('Error updating budget actual amount:', error);
+    console.error('Error updating actual amount:', error);
     res.status(500).json({ message: 'Server error', error: error instanceof Error ? error.message : 'Unknown error' });
   }
 };
