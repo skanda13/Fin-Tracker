@@ -17,6 +17,7 @@ const generateToken = (id: Types.ObjectId) => {
 export const registerUser = async (req: Request, res: Response) => {
   try {
     const { name, email, password } = req.body;
+    console.log('Register request received:', { name, email });
 
     // Check if all fields exist
     if (!name || !email || !password) {
@@ -32,6 +33,7 @@ export const registerUser = async (req: Request, res: Response) => {
     // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
+    console.log('Password hashed successfully');
 
     // Create user with typed response
     const user = await User.create({
@@ -46,6 +48,7 @@ export const registerUser = async (req: Request, res: Response) => {
     });
 
     if (user) {
+      console.log('User created successfully:', user._id);
       res.status(201).json({
         _id: user._id,
         name: user.name,
@@ -68,6 +71,7 @@ export const registerUser = async (req: Request, res: Response) => {
 export const loginUser = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
+    console.log('Login attempt for email:', email);
 
     // Check if email and password are provided
     if (!email || !password) {
@@ -75,19 +79,24 @@ export const loginUser = async (req: Request, res: Response) => {
     }
 
     // Check for user email with proper typing
-    const user = await User.findOne({ email }).exec();
+    const user = await User.findOne({ email }).select('+password').exec();
+    console.log('User found:', user ? 'Yes' : 'No');
 
     if (!user) {
+      console.log('User not found with email:', email);
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
     // Check if password matches
     const isMatch = await bcrypt.compare(password, user.password);
+    console.log('Password match:', isMatch ? 'Yes' : 'No');
 
     if (!isMatch) {
+      console.log('Password does not match for user:', email);
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
+    console.log('Login successful for user:', user._id);
     res.json({
       _id: user._id,
       name: user.name,
