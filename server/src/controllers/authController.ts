@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import User from '../models/User';
+import User, { IUser } from '../models/User';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 
@@ -33,7 +33,7 @@ export const registerUser = async (req: Request, res: Response) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Create user
-    const user = await User.create({
+    const user: IUser = await User.create({
       name,
       email,
       password: hashedPassword,
@@ -55,9 +55,9 @@ export const registerUser = async (req: Request, res: Response) => {
     } else {
       res.status(400).json({ message: 'Invalid user data' });
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in registerUser:', error);
-    res.status(500).json({ message: 'Server error', error: error instanceof Error ? error.message : 'Unknown error' });
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
@@ -74,7 +74,7 @@ export const loginUser = async (req: Request, res: Response) => {
     }
 
     // Check for user email
-    const user = await User.findOne({ email });
+    const user: IUser | null = await User.findOne({ email });
 
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
@@ -94,9 +94,9 @@ export const loginUser = async (req: Request, res: Response) => {
       settings: user.settings,
       token: generateToken(user._id.toString()),
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in loginUser:', error);
-    res.status(500).json({ message: 'Server error', error: error instanceof Error ? error.message : 'Unknown error' });
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
@@ -106,16 +106,16 @@ export const loginUser = async (req: Request, res: Response) => {
 export const getMe = async (req: Request, res: Response) => {
   try {
     // User id comes from the auth middleware
-    const user = await User.findById((req as any).user.id).select('-password');
+    const user = await User.findById(req.user?._id).select('-password');
     
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
     
     res.json(user);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in getMe:', error);
-    res.status(500).json({ message: 'Server error', error: error instanceof Error ? error.message : 'Unknown error' });
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
@@ -124,31 +124,36 @@ export const getMe = async (req: Request, res: Response) => {
 // @access  Private
 export const updateProfile = async (req: Request, res: Response) => {
   try {
-    const { name, settings } = req.body;
-    const userId = (req as any).user._id;
+    const user: IUser | null = await User.findById(req.user?._id);
 
-    // Find the user
-    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Update user information
-    if (name) user.name = name;
-    if (settings) user.settings = { ...user.settings, ...settings };
+    user.name = req.body.name || user.name;
+    user.email = req.body.email || user.email;
+    
+    if (req.body.password) {
+      user.password = req.body.password;
+    }
 
-    // Save the updated user
-    await user.save();
+    if (req.body.settings) {
+      user.settings = {
+        ...user.settings,
+        ...req.body.settings
+      };
+    }
 
-    // Return updated user data
+    const updatedUser = await user.save();
+
     res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      settings: user.settings
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      settings: updatedUser.settings
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in updateProfile:', error);
-    res.status(500).json({ message: 'Server error', error: error instanceof Error ? error.message : 'Unknown error' });
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 }; 
