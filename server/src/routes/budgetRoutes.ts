@@ -8,7 +8,7 @@ const router = express.Router();
 router.get('/', getBudgets);
 
 // @route   GET /api/budgets/:id
-// @desc    Get a single budget
+// @desc    Get single budget
 router.get('/:id', getBudgetById);
 
 // @route   POST /api/budgets
@@ -20,7 +20,7 @@ router.post('/', createBudget);
 router.put('/:id', updateBudget);
 
 // @route   PATCH /api/budgets/:id/actual
-// @desc    Update actual amount in a budget
+// @desc    Update actual amount for a budget
 router.patch('/:id/actual', updateActualAmount);
 
 // @route   DELETE /api/budgets/:id
