@@ -4,8 +4,7 @@ export interface IGoal extends Document {
   name: string;
   targetAmount: number;
   currentAmount: number;
-  targetDate: Date;
-  category?: string;
+  deadline: Date;
   notes?: string;
   userId: mongoose.Types.ObjectId;
   createdAt: Date;
@@ -16,12 +15,12 @@ const goalSchema = new Schema<IGoal>(
   {
     name: {
       type: String,
-      required: [true, 'Please provide a name for the goal'],
+      required: [true, 'Goal name is required'],
       trim: true
     },
     targetAmount: {
       type: Number,
-      required: [true, 'Please provide a target amount'],
+      required: [true, 'Target amount is required'],
       min: [0, 'Target amount cannot be negative']
     },
     currentAmount: {
@@ -29,13 +28,9 @@ const goalSchema = new Schema<IGoal>(
       default: 0,
       min: [0, 'Current amount cannot be negative']
     },
-    targetDate: {
+    deadline: {
       type: Date,
-      required: [true, 'Please provide a target date']
-    },
-    category: {
-      type: String,
-      trim: true
+      required: [true, 'Deadline is required']
     },
     notes: {
       type: String,
@@ -43,8 +38,8 @@ const goalSchema = new Schema<IGoal>(
     },
     userId: {
       type: Schema.Types.ObjectId,
-      required: true,
-      ref: 'User'
+      ref: 'User',
+      required: true
     }
   },
   {
