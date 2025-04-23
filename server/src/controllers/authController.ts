@@ -2,10 +2,11 @@ import { Request, Response } from 'express';
 import User, { IUser } from '../models/User';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import { Types } from 'mongoose';
 
 // Generate JWT
-const generateToken = (id: string) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'your-secret-key', {
+const generateToken = (id: Types.ObjectId) => {
+  return jwt.sign({ id: id.toString() }, process.env.JWT_SECRET || 'your-secret-key', {
     expiresIn: '30d',
   });
 };
@@ -32,8 +33,8 @@ export const registerUser = async (req: Request, res: Response) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create user
-    const user: IUser = await User.create({
+    // Create user with typed response
+    const user = await User.create({
       name,
       email,
       password: hashedPassword,
@@ -50,7 +51,7 @@ export const registerUser = async (req: Request, res: Response) => {
         name: user.name,
         email: user.email,
         settings: user.settings,
-        token: generateToken(user._id.toString()),
+        token: generateToken(user._id),
       });
     } else {
       res.status(400).json({ message: 'Invalid user data' });
@@ -73,8 +74,8 @@ export const loginUser = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Please provide email and password' });
     }
 
-    // Check for user email
-    const user: IUser | null = await User.findOne({ email });
+    // Check for user email with proper typing
+    const user = await User.findOne({ email }).exec();
 
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
@@ -92,7 +93,7 @@ export const loginUser = async (req: Request, res: Response) => {
       name: user.name,
       email: user.email,
       settings: user.settings,
-      token: generateToken(user._id.toString()),
+      token: generateToken(user._id),
     });
   } catch (error: any) {
     console.error('Error in loginUser:', error);
@@ -105,8 +106,11 @@ export const loginUser = async (req: Request, res: Response) => {
 // @access  Private
 export const getMe = async (req: Request, res: Response) => {
   try {
-    // User id comes from the auth middleware
-    const user = await User.findById(req.user?._id).select('-password');
+    if (!req.user?._id) {
+      return res.status(401).json({ message: 'Not authorized' });
+    }
+
+    const user = await User.findById(req.user._id).select('-password').exec();
     
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -124,7 +128,11 @@ export const getMe = async (req: Request, res: Response) => {
 // @access  Private
 export const updateProfile = async (req: Request, res: Response) => {
   try {
-    const user: IUser | null = await User.findById(req.user?._id);
+    if (!req.user?._id) {
+      return res.status(401).json({ message: 'Not authorized' });
+    }
+
+    const user = await User.findById(req.user._id).exec();
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -134,7 +142,8 @@ export const updateProfile = async (req: Request, res: Response) => {
     user.email = req.body.email || user.email;
     
     if (req.body.password) {
-      user.password = req.body.password;
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(req.body.password, salt);
     }
 
     if (req.body.settings) {
