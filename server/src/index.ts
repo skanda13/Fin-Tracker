@@ -40,6 +40,7 @@ import {
 
 // Import routes
 import goalRoutes from './routes/goalRoutes';
+import budgetRoutes from './routes/budgetRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -129,11 +130,7 @@ app.put('/api/expenses/:id', protect, updateExpense);
 app.delete('/api/expenses/:id', protect, deleteExpense);
 
 // Budget Routes
-app.get('/api/budgets', protect, getBudgets);
-app.post('/api/budgets', protect, createBudget);
-app.get('/api/budgets/:id', protect, getBudgetById);
-app.put('/api/budgets/:id', protect, updateBudget);
-app.delete('/api/budgets/:id', protect, deleteBudget);
+app.use('/api/budgets', protect, budgetRoutes);
 
 // Goal Routes
 app.use('/api/goals', goalRoutes);
